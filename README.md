@@ -1,0 +1,125 @@
+# SmartExpense – Personal Expense Tracker Web App
+
+SmartExpense is a simple and user-friendly web application for tracking personal expenses. Users can register, log in, add expenses with categories (food, transport, bills, etc.), and view monthly summaries with charts.
+
+Tech stack:
+- Frontend: React (Create React App), Chart.js (reports visualization)
+- Backend: Node.js + Express (REST API)
+- Database: PostgreSQL (via Sequelize ORM)
+- DevOps: Docker Compose for local stack, basic CI (GitHub Actions) placeholder
+
+## Feature Summary
+
+- Auth: Register & login (JWT + bcrypt)
+- Expenses: Add, list, edit, delete expenses (amount, category, date, optional note)
+- Monthly Summary: Category distribution + last 6 months totals (Reports page)
+- Charts: Pie (category % for selected month) & Bar (monthly totals)
+- Protected Routes: Dashboard, Expenses, Reports require authentication
+
+## How to run (for demo)
+
+Option A — Docker Compose (recommended):
+1. Ensure Docker Desktop is installed and running.
+2. Copy env examples:
+	- Backend: `cp backend/.env.example backend/.env` (optional; compose provides sensible defaults)
+	- Frontend: `cp frontend/.env.example frontend/.env` (optional)
+3. Start the stack:
+	- `docker compose up --build`
+4. Open:
+	- Frontend: http://localhost:3000
+	- Backend health: http://localhost:4000/health
+	- Postgres (host port): localhost:5433 (container listens on 5432)
+
+Option B — Run locally without Docker:
+1. PostgreSQL: create DB `smartexpense` and user/password (or use a local connection string), then set backend `.env` accordingly.
+2. Backend:
+	- `cd backend && cp .env.example .env && npm install && npm run dev`
+3. Frontend:
+	- In another terminal: `cd frontend && cp .env.example .env && npm install && npm start`
+4. Visit http://localhost:3000 and use the Register/Login pages.
+
+## Repository layout
+- `backend/` — Express server, Sequelize models/migrations, auth routes
+- `frontend/` — React app (CRA), pages/components for auth and dashboard
+	- Pages: Home, Login, Register, Dashboard, Expenses, Reports
+
+## API Endpoints (backend)
+
+Auth:
+- POST `/api/auth/register` { name, email, password }
+- POST `/api/auth/login` { email, password }
+
+Expenses (JWT required – send header `Authorization: Bearer <token>`):
+- GET `/api/expenses` (optional `?month=YYYY-MM` to filter) – list user expenses
+- POST `/api/expenses` { amount, category, occurredOn, note? } – create
+- PUT `/api/expenses/:id` { amount?, category?, occurredOn?, note? } – update
+- DELETE `/api/expenses/:id` – remove
+- GET `/api/expenses/summary/month?month=YYYY-MM` – monthly category totals
+
+Categories supported (frontend constants): `food`, `transport`, `bills`, `entertainment`, `other`
+
+## Using the Expenses Page (frontend)
+1. Log in (or register then login).
+2. Navigate to Expenses.
+3. Select month (defaults to current). Add new expense via the form.
+4. Edit: click Edit, form populates, save updates.
+5. Delete: click Delete, confirm.
+6. Total for the month shown next to month selector.
+
+## Reports Page
+1. Choose month with the month input.
+2. Pie chart shows category distribution for that month.
+3. Bar chart shows totals for the last 6 months (including current).
+
+## Example curl calls
+
+Register:
+```
+curl -X POST http://localhost:4000/api/auth/register \
+	-H 'Content-Type: application/json' \
+	-d '{"name":"Test","email":"test@example.com","password":"secret123"}'
+```
+
+Login (capture token):
+```
+TOKEN=$(curl -s -X POST http://localhost:4000/api/auth/login \
+	-H 'Content-Type: application/json' \
+	-d '{"email":"test@example.com","password":"secret123"}' | jq -r .token)
+```
+
+Add Expense:
+```
+curl -X POST http://localhost:4000/api/expenses \
+	-H "Authorization: Bearer $TOKEN" \
+	-H 'Content-Type: application/json' \
+	-d '{"amount":12.50,"category":"food","occurredOn":"2025-11-01","note":"Lunch"}'
+```
+
+List Current Month:
+```
+curl -H "Authorization: Bearer $TOKEN" http://localhost:4000/api/expenses?month=$(date +%Y-%m)
+```
+
+Monthly Summary:
+```
+curl -H "Authorization: Bearer $TOKEN" http://localhost:4000/api/expenses/summary/month?month=$(date +%Y-%m)
+```
+
+## Demo talking points
+- Clear separation of concerns (frontend/backend)
+- Environment-driven configuration (.env) for DB, API URLs, JWT secret
+- Security basics: bcrypt password hashing, JWT-based sessions, CORS
+- DevOps: containerized services, reproducible dev with Compose, CI checks
+
+## DevOps additions
+- Dockerfiles for backend and frontend
+- docker-compose.yml orchestrating Postgres + API + UI
+- Basic CI (GitHub Actions) to install and build on push/PR
+
+## Troubleshooting
+- Port 5432 already in use: the compose file maps Postgres to host port 5433 to avoid conflicts. If you need to connect from your host, use `-p 5433` in psql or set the connection string to `postgres://user:pass@localhost:5433/db`.
+
+Connect to Postgres container psql:
+```
+docker exec -it smartexpense-postgres psql -U smartexpense -d smartexpense
+```
