@@ -27,8 +27,8 @@ jobs:
           file: ./backend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/SmartExpense-backend:latest
-            ghcr.io/${{ github.repository_owner }}/SmartExpense-backend:sha-${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/SmartExpense/backend:latest
+            ghcr.io/${{ github.repository_owner }}/SmartExpense/backend:sha-${{ github.sha }}
 
   frontend:
     runs-on: ubuntu-latest
@@ -51,7 +51,7 @@ jobs:
           file: ./frontend/Dockerfile.prod
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/SmartExpense-frontend:latest
-            ghcr.io/${{ github.repository_owner }}/SmartExpense-frontend:sha-${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/SmartExpense/frontend:latest
+            ghcr.io/${{ github.repository_owner }}/SmartExpense/frontend:sha-${{ github.sha }}
           build-args: |
             REACT_APP_API_URL=/api
