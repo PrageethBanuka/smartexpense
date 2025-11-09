@@ -105,6 +105,32 @@ Monthly Summary:
 curl -H "Authorization: Bearer $TOKEN" http://localhost:4000/api/expenses/summary/month?month=$(date +%Y-%m)
 ```
 
+## Jenkins CI/CD (optional)
+
+This repo includes a `Jenkinsfile` for a simple CI/CD pipeline that:
+- Checks out code on GitHub push (via webhook)
+- Installs backend deps and runs tests (placeholder)
+- Builds frontend production bundle
+- Builds Docker images for backend and frontend using `Dockerfile.prod`
+- Tags images as `latest` and `sha-<commit>`
+- Pushes to Docker Hub under your namespace (default `banukarajapaksha`)
+
+Prereqs on Jenkins agent:
+- Docker CLI/daemon available to the agent
+- Node.js 18+ (for npm ci/build steps)
+
+Jenkins setup:
+- Create Credentials → `dockerhub` (Kind: Username with password; Username: your Docker Hub username; Password: Docker Hub Access Token)
+- Create a Pipeline (or Multibranch) job pointing to this repo
+- Install GitHub plugin and add a webhook in GitHub:
+	- Payload URL: `https://<your-jenkins>/github-webhook/`
+	- Content type: `application/json`
+	- Event: `Just the push event`
+
+Change Docker Hub namespace:
+- Edit `Jenkinsfile` env `DOCKERHUB_USER` if your username differs.
+
+
 ## Demo talking points
 - Clear separation of concerns (frontend/backend)
 - Environment-driven configuration (.env) for DB, API URLs, JWT secret
