@@ -130,6 +130,29 @@ Jenkins setup:
 Change Docker Hub namespace:
 - Edit `Jenkinsfile` env `DOCKERHUB_USER` if your username differs.
 
+### Expose Jenkins via ngrok (for GitHub webhooks)
+
+If your Jenkins runs on `http://localhost:8080`, expose it with ngrok so GitHub can reach it:
+
+1) Install and auth ngrok (macOS):
+```
+brew install --cask ngrok
+ngrok config add-authtoken <YOUR_NGROK_TOKEN>
+```
+
+2) Start the tunnel using the helper script:
+```
+bash scripts/start-ngrok-jenkins.sh 8080
+```
+
+3) Copy the printed public URL and set:
+- Jenkins URL (Manage Jenkins → Configure System): `https://<your-ngrok-domain>/`
+- GitHub Webhook Payload URL: `https://<your-ngrok-domain>/github-webhook/`
+
+Notes:
+- Keep ngrok running while you want webhooks to work.
+- Free ngrok domains change each run—update the webhook if it changes.
+
 
 ## Demo talking points
 - Clear separation of concerns (frontend/backend)
@@ -149,3 +172,5 @@ Connect to Postgres container psql:
 ```
 docker exec -it smartexpense-postgres psql -U smartexpense -d smartexpense
 ```
+
+
