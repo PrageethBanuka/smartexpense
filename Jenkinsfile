@@ -6,12 +6,6 @@ pipeline {
     skipDefaultCheckout()
   }
 
-  /* NOTE:
-   * Removed options { timestamps(); ansiColor('xterm') } because your Jenkins
-   * instance does not have the Timestamper and/or AnsiColor plugins installed.
-   * To re-enable: Install plugins "Timestamper" and "AnsiColor" then restore:
-   *   options { timestamps(); ansiColor('xterm') }
-   */
 
   parameters {
     string(name: 'DOCKERHUB_USER', defaultValue: 'banukarajapaksha', description: 'Docker Hub username/namespace (lowercase)')
