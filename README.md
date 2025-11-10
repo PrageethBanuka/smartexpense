@@ -173,4 +173,41 @@ Connect to Postgres container psql:
 docker exec -it smartexpense-postgres psql -U smartexpense -d smartexpense
 ```
 
+### Jenkins/GitHub Webhook Troubleshooting
+
+If Jenkins only builds after a manual "Scan Repository Now" and not immediately on push, use this checklist:
+
+1. Jenkins Root URL
+	- Manage Jenkins → Configure System → Jenkins URL must exactly match the public ngrok (or reverse proxy) URL, e.g. `https://example-tunnel.ngrok-free.dev/` (include trailing slash). Save after changing.
+2. GitHub Webhook
+	- In GitHub repo Settings → Webhooks, Payload URL must be `https://<public-domain>/github-webhook/` (trailing slash required). Content type: `application/json`. Event: push (or all if desired).
+3. Webhook Deliveries
+	- Open the latest delivery. A push should yield 200/201/204. A 302 followed by 200 is fine. 405 means HEAD/GET was sent (normal if you manually curl with -I). 403/404 indicates URL or secret issues.
+4. Secret Consistency (optional)
+	- If you set a secret in GitHub, configure the same secret in Jenkins GitHub plugin global settings; mismatch can drop events silently.
+5. Required Plugins
+	- Ensure these are installed & up to date: GitHub Branch Source, GitHub Integration, GitHub plugin. Restart Jenkins after installation.
+6. Multibranch Job Configuration
+	- In the job: Source → GitHub. Add credentials (PAT or GitHub App) with repo + hooks scope. No restrictive branch filters excluding `dev`. Jenkinsfile path matches `Jenkinsfile` at repo root.
+7. Credentials Scope
+	- PAT must have `repo` and `admin:repo_hook` (or use a GitHub App with appropriate permissions). Without hook permission Jenkins may not register reliably.
+8. Logs
+	- Manage Jenkins → System Log. Add a recorder for `org.jenkinsci.plugins.github`. Push a commit; look for "Received POST /github-webhook/". Absence means request never reached Jenkins.
+9. Ngrok Rotation
+	- Free ngrok URLs change each start; update BOTH Jenkins Root URL and GitHub webhook each time. A stale webhook keeps pointing to the old domain.
+10. Manual Test POST
+	- Simulate GitHub push: `curl -X POST https://<public-domain>/github-webhook/ -H 'Content-Type: application/json' -d '{"zen":"test","hook_id":0}'` – expect 200/201/204 (may 403 if secret enforced). This confirms network reachability.
+11. CSRF Protection
+	- Default Jenkins CSRF (crumb) should not block GitHub plugin endpoint. If customized security breaks it, temporarily disable crumb protection (only for diagnosis) then re-enable.
+12. Fallback Strategy
+	- If webhook reliability remains poor, schedule periodic scans (e.g. every 1 minute) as a stopgap: job configuration → "Scan Repository Triggers". Webhooks are still preferred for immediate builds.
+
+After fixing, push a no-op commit:
+```
+git commit --allow-empty -m "chore: webhook test"
+git push origin dev
+```
+Then re-check webhook delivery and Jenkins build list for `dev`.
+
+
 
