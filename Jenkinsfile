@@ -26,6 +26,14 @@ pipeline {
   }
 
   stages {
+    stage('Env Sanity') {
+      steps {
+        echo '--- Environment sanity check ---'
+        sh 'uname -a || true'
+        sh 'which docker && docker version || echo "Docker CLI not available"'
+        sh 'echo Node versions (if installed): && which node && node -v || echo "Node not installed on agent"'
+      }
+    }
     stage('Checkout') {
       steps {
         checkout scm
@@ -78,7 +86,7 @@ pipeline {
     stage('Push to Docker Hub') {
       steps {
         withCredentials([usernamePassword(credentialsId: "${params.DOCKERHUB_CREDENTIALS_ID}", usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
-          sh 'echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin'
+          sh 'set -e; echo "Logging into Docker Hub as $DH_USER"; echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin && echo "Login Succeeded"'
           script {
             def sha = readFile('.gitsha').trim()
             sh """
@@ -88,6 +96,8 @@ pipeline {
               docker push ${FRONTEND_IMG}:sha-${sha}
             """
           }
+          // Logout to avoid credential leakage across subsequent builds on same agent
+          sh 'docker logout || true'
         }
       }
     }
@@ -104,6 +114,8 @@ pipeline {
             docker pull ${BACKEND_IMG}:sha-${sha} || echo 'WARN: backend sha pull failed'
             echo 'Verifying frontend latest tag exists on Docker Hub...'
             docker pull ${FRONTEND_IMG}:latest || echo 'WARN: frontend latest pull failed'
+            echo 'Verifying frontend sha tag exists on Docker Hub...'
+            docker pull ${FRONTEND_IMG}:sha-${sha} || echo 'WARN: frontend sha pull failed'
           """
         }
       }
