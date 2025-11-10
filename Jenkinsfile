@@ -1,6 +1,11 @@
 pipeline {
   agent any
 
+  // Avoid Jenkins' default SCM checkout because we do checkout ourselves in the Checkout stage
+  options {
+    skipDefaultCheckout()
+  }
+
   /* NOTE:
    * Removed options { timestamps(); ansiColor('xterm') } because your Jenkins
    * instance does not have the Timestamper and/or AnsiColor plugins installed.
@@ -32,8 +37,9 @@ pipeline {
       steps {
         echo '--- Environment sanity check ---'
         sh 'uname -a || true'
-        sh 'which docker && docker version || echo "Docker CLI not available"'
-        sh 'echo Node versions (if installed): && which node && node -v || echo "Node not installed on agent"'
+        sh 'command -v docker >/dev/null 2>&1 && docker version || echo "Docker CLI not available"'
+        sh 'echo "Node check:"'
+        sh 'command -v node >/dev/null 2>&1 && node -v || echo "Node not installed on agent"'
       }
     }
     stage('Checkout') {
@@ -132,8 +138,8 @@ pipeline {
       echo 'Jenkins pipeline failed.'
     }
     always {
-      // Avoid disk bloat on agents
-      sh 'docker image prune -f || true'
+      // Avoid disk bloat on agents; only attempt if docker exists
+      sh 'command -v docker >/dev/null 2>&1 && docker image prune -f || true'
     }
   }
 }
