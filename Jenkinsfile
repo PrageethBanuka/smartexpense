@@ -87,6 +87,14 @@ pipeline {
 
     stage('Push to Docker Hub') {
       steps {
+        // IMPORTANT: The credential referenced by DOCKERHUB_CREDENTIALS_ID must be of type
+        // "Username with password" (StandardUsernamePasswordCredentials) where:
+        //   Username = your Docker Hub username (e.g. banukarajapaksha)
+        //   Password = Docker Hub access token (not your account password, not an SSH key)
+        // If you accidentally created an "SSH Username with private key" credential with this ID,
+        // Jenkins will throw: Credentials is of type SSH Username with private key where StandardUsernamePasswordCredentials was expected.
+        // Fix: Manage Jenkins -> Credentials -> (Global) -> Add Credentials -> Kind: "Username with password".
+        // Use a new ID (e.g. dockerhub-token) and update the parameter default OR recreate with the same ID.
         withCredentials([usernamePassword(credentialsId: "${params.DOCKERHUB_CREDENTIALS_ID}", usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
           sh 'set -e; echo "Logging into Docker Hub as $DH_USER"; echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin && echo "Login Succeeded"'
           script {

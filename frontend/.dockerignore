@@ -1,0 +1,14 @@
+# Exclude local artifacts and dependencies from Docker build context
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-lock.yaml#bak
+.DS_Store
+.git
+.gitignore
+coverage
+build
+dist
+.cache
+.env
+.env.*
