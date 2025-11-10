@@ -22,7 +22,6 @@ pipeline {
   }
 
   triggers {
-    // Requires GitHub (or Git) plugin configured; alternatively use Generic Webhook Trigger
     githubPush()
   }
 
@@ -36,64 +35,40 @@ pipeline {
         sh 'command -v node >/dev/null 2>&1 && node -v || echo "Node not installed on agent"'
       }
     }
-    stage('Checkout') {
-      steps {
-        checkout scm
-        sh 'git rev-parse --short HEAD > .gitsha'
-      }
-    }
-
-    stage('Docker Build Images') {
-      steps {
-        script {
-          sh """
-            docker build -t ${BACKEND_IMG}:latest -f backend/Dockerfile backend
-            docker build --build-arg REACT_APP_API_URL=/api -t ${FRONTEND_IMG}:latest -f frontend/Dockerfile.prod frontend
-          """
-        }
-      }
-    }
-
-    stage('Tag Images (sha)') {
+    stage('Backend: Build & Push') {
       steps {
         script {
           def sha = readFile('.gitsha').trim()
-          sh """
-            docker tag ${BACKEND_IMG}:latest ${BACKEND_IMG}:sha-${sha}
-            docker tag ${FRONTEND_IMG}:latest ${FRONTEND_IMG}:sha-${sha}
-          """
-        }
-      }
-    }
-
-    stage('Push to Docker Hub') {
-      steps {
-        // IMPORTANT: The credential referenced by DOCKERHUB_CREDENTIALS_ID must be of type
-        // "Username with password" (StandardUsernamePasswordCredentials) where:
-        //   Username = your Docker Hub username (e.g. banukarajapaksha)
-        //   Password = Docker Hub access token (not your account password, not an SSH key)
-        // If you accidentally created an "SSH Username with private key" credential with this ID,
-        // Jenkins will throw: Credentials is of type SSH Username with private key where StandardUsernamePasswordCredentials was expected.
-        // Fix: Manage Jenkins -> Credentials -> (Global) -> Add Credentials -> Kind: "Username with password".
-        // Use a new ID (e.g. dockerhub-token) and update the parameter default OR recreate with the same ID.
-        withCredentials([usernamePassword(credentialsId: "${params.DOCKERHUB_CREDENTIALS_ID}", usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
-          sh 'set -e; echo "Logging into Docker Hub as $DH_USER"; echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin && echo "Login Succeeded"'
-          script {
-            def sha = readFile('.gitsha').trim()
-            sh """
-              docker push ${BACKEND_IMG}:latest
-              docker push ${BACKEND_IMG}:sha-${sha}
-              docker push ${FRONTEND_IMG}:latest
-              docker push ${FRONTEND_IMG}:sha-${sha}
-            """
+          withCredentials([usernamePassword(credentialsId: "${params.DOCKERHUB_CREDENTIALS_ID}", usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
+            sh 'set -e; echo "Logging into Docker Hub (backend) as $DH_USER"; echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin'
+            sh "docker build -t ${BACKEND_IMG}:latest -f backend/Dockerfile backend"
+            sh "docker tag ${BACKEND_IMG}:latest ${BACKEND_IMG}:sha-${sha}"
+            sh "docker push ${BACKEND_IMG}:latest"
+            sh "docker push ${BACKEND_IMG}:sha-${sha}"
+            sh 'docker logout || true'
           }
-          // Logout to avoid credential leakage across subsequent builds on same agent
-          sh 'docker logout || true'
         }
       }
     }
-  }
 
+    stage('Frontend: Build & Push') {
+      steps {
+        script {
+          def sha = readFile('.gitsha').trim()
+          withCredentials([usernamePassword(credentialsId: "${params.DOCKERHUB_CREDENTIALS_ID}", usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
+            sh 'set -e; echo "Logging into Docker Hub (frontend) as $DH_USER"; echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin'
+            // Catch build errors so pipeline doesn't abort before backend image is delivered
+            catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+              sh "docker build --build-arg REACT_APP_API_URL=/api -t ${FRONTEND_IMG}:latest -f frontend/Dockerfile.prod frontend"
+              sh "docker tag ${FRONTEND_IMG}:latest ${FRONTEND_IMG}:sha-${sha}"
+              sh "docker push ${FRONTEND_IMG}:latest"
+              sh "docker push ${FRONTEND_IMG}:sha-${sha}"
+            }
+            sh 'docker logout || true'
+          }
+        }
+      }
+    }
   post {
     success {
       echo 'Jenkins pipeline succeeded.'
@@ -102,7 +77,6 @@ pipeline {
       echo 'Jenkins pipeline failed.'
     }
     always {
-      // Avoid disk bloat on agents; only attempt if docker exists
       sh 'command -v docker >/dev/null 2>&1 && docker image prune -f || true'
     }
   }
