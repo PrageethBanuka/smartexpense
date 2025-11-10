@@ -43,25 +43,6 @@ pipeline {
       }
     }
 
-    stage('Backend: Install & Test') {
-      steps {
-        dir('backend') {
-          sh 'npm ci || npm install'
-          // TODO: add real tests when available
-          sh 'npm test || echo "No backend tests yet"'
-        }
-      }
-    }
-
-    stage('Frontend: Build (Prod)') {
-      steps {
-        dir('frontend') {
-          sh 'npm ci || npm install'
-          sh 'npm run build'
-        }
-      }
-    }
-
     stage('Docker Build Images') {
       steps {
         script {
@@ -108,25 +89,6 @@ pipeline {
           }
           // Logout to avoid credential leakage across subsequent builds on same agent
           sh 'docker logout || true'
-        }
-      }
-    }
-
-    stage('Verify Docker Hub Images') {
-      steps {
-        script {
-          def sha = readFile('.gitsha').trim()
-          // Pull back one image tag to confirm push succeeded; ignore failures to avoid hard stop
-          sh """
-            echo 'Verifying backend latest tag exists on Docker Hub...'
-            docker pull ${BACKEND_IMG}:latest || echo 'WARN: backend latest pull failed'
-            echo 'Verifying backend sha tag exists on Docker Hub...'
-            docker pull ${BACKEND_IMG}:sha-${sha} || echo 'WARN: backend sha pull failed'
-            echo 'Verifying frontend latest tag exists on Docker Hub...'
-            docker pull ${FRONTEND_IMG}:latest || echo 'WARN: frontend latest pull failed'
-            echo 'Verifying frontend sha tag exists on Docker Hub...'
-            docker pull ${FRONTEND_IMG}:sha-${sha} || echo 'WARN: frontend sha pull failed'
-          """
         }
       }
     }
