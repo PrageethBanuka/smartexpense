@@ -35,6 +35,12 @@ pipeline {
         sh 'command -v node >/dev/null 2>&1 && node -v || echo "Node not installed on agent"'
       }
     }
+    stage('Checkout') {
+      steps {
+        checkout scm
+        sh 'git rev-parse --short HEAD > .gitsha'
+      }
+    }
     stage('Backend: Build & Push') {
       steps {
         script {
@@ -69,6 +75,8 @@ pipeline {
         }
       }
     }
+  }
+
   post {
     success {
       echo 'Jenkins pipeline succeeded.'
@@ -81,4 +89,4 @@ pipeline {
     }
   }
 }
-}
+ 
