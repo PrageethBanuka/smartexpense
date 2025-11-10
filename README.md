@@ -168,9 +168,6 @@ Notes:
 ## Troubleshooting
 - Port 5432 already in use: the compose file maps Postgres to host port 5433 to avoid conflicts. If you need to connect from your host, use `-p 5433` in psql or set the connection string to `postgres://user:pass@localhost:5433/db`.
 
-
-## my notes
-
 Connect to Postgres container psql:
 ```
 docker exec -it smartexpense-postgres psql -U smartexpense -d smartexpense
