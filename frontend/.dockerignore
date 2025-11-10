@@ -1,4 +1,30 @@
-# Exclude local artifacts and dependencies from Docker build context
+node_modules/
+.npm/
+.pnpm-store/
+.yarn/
+.bun/
+build/
+dist/
+coverage/
+.tmp/
+.cache/
+.next/
+out/
+storybook-static/
+.git/
+.gitignore
+.vscode/
+.DS_Store
+.env
+.env.*
+*.local
+*.log
+npm-debug.log*
+yarn-error.log*
+Dockerfile*
+docker-compose*.yml
+*.md
+nginx.conf# Exclude local artifacts and dependencies from Docker build context
 node_modules
 npm-debug.log
 yarn-error.log
