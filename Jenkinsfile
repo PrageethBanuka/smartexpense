@@ -47,8 +47,8 @@ pipeline {
       steps {
         script {
           sh """
-            docker build -t ${BACKEND_IMG}:latest -f backend/Dockerfile.prod backend
-            docker build -t ${FRONTEND_IMG}:latest -f frontend/Dockerfile.prod frontend
+            docker build -t ${BACKEND_IMG}:latest -f backend/Dockerfile backend
+            docker build --build-arg REACT_APP_API_URL=/api -t ${FRONTEND_IMG}:latest -f frontend/Dockerfile.prod frontend
           """
         }
       }
