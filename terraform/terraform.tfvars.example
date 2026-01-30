@@ -1,0 +1,18 @@
+# Terraform Configuration
+# Example terraform.tfvars file - Copy and modify with your values
+
+# AWS region where resources will be created
+aws_region = "us-east-1"
+
+# Environment name
+environment = "production"
+
+# EC2 instance type (t2.micro is free tier eligible)
+instance_type = "t2.micro"
+
+# Path to your SSH public key
+# Generate with: ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+
+# Project name for resource tagging
+project_name = "SmartExpense"

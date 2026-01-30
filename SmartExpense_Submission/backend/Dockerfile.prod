@@ -1,0 +1,9 @@
+FROM node:18-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
+RUN npm ci --omit=dev || yarn install --production || pnpm install --prod
+COPY . .
+EXPOSE 4000
+CMD ["node", "src/index.js"]

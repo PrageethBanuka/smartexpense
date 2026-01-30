@@ -35,3 +35,30 @@ frontend/dist/
 # Misc
 .tmp/
 *.swp
+
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/terraform.tfvars
+terraform/*.tfvars
+terraform/.terraform.tfstate.lock.info
+terraform/crash.log
+
+# Ansible
+ansible/ansible_env.sh
+ansible/*.retry
+/tmp/ansible_facts
+
+# Deployment info
+deployment-info.txt
+*.pem
+*.key
+
+# Documents
+*.pdf
+*.PDF
+*.html
+
+
