@@ -1,7 +1,6 @@
 pipeline {
   agent any
 
-  // Avoid Jenkins' default SCM checkout because we do checkout ourselves in the Checkout stage
   options {
     skipDefaultCheckout()
   }

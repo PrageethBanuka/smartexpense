@@ -1,0 +1,12 @@
+Project: SmartExpense - Personal Expense Tracker
+
+- Banuka Rajapaksha
+
+Index No: EG/2022/52645
+
+Git Repository: https://github.com/PrageethBanuka/smartexpense.git
+
+Submission Date: January 30, 2026
+
+Note: This submission includes all DevOps configurations (Docker, Terraform, Ansible, CI/CD)
+as code files. AWS deployment can be executed by following DEPLOYMENT.md guide.

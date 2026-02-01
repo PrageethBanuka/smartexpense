@@ -1,0 +1,334 @@
+---
+# SmartExpense Application Deployment Playbook
+# This playbook deploys the complete application stack
+
+- name: Deploy SmartExpense Application
+  hosts: app_servers
+  become: yes
+  vars:
+    app_dir: /opt/smartexpense
+    docker_hub_user: banukarajapaksha
+    compose_version: "2.24.0"
+    
+  tasks:
+    # ==================================
+    # SYSTEM PREPARATION
+    # ==================================
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      tags: [setup]
+
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist
+        autoremove: yes
+        autoclean: yes
+      tags: [setup]
+
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - git
+          - unzip
+          - python3-pip
+        state: present
+      tags: [setup]
+
+    # ==================================
+    # DOCKER INSTALLATION
+    # ==================================
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      tags: [docker]
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+      tags: [docker]
+
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+        update_cache: yes
+      tags: [docker]
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+      tags: [docker]
+
+    - name: Add ubuntu user to docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+      tags: [docker]
+
+    - name: Install Docker Compose
+      get_url:
+        url: "https://github.com/docker/compose/releases/download/v{{ compose_version }}/docker-compose-linux-x86_64"
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+      tags: [docker]
+
+    - name: Verify Docker installation
+      command: docker --version
+      register: docker_version
+      changed_when: false
+      tags: [docker]
+
+    - name: Display Docker version
+      debug:
+        var: docker_version.stdout
+      tags: [docker]
+
+    # ==================================
+    # APPLICATION DIRECTORY SETUP
+    # ==================================
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+      tags: [deploy]
+
+    - name: Create environment file directory
+      file:
+        path: "{{ app_dir }}/env"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0700'
+      tags: [deploy]
+
+    # ==================================
+    # COPY CONFIGURATION FILES
+    # ==================================
+    - name: Copy docker-compose.prod.yml
+      copy:
+        src: ../docker-compose.prod.yml
+        dest: "{{ app_dir }}/docker-compose.yml"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+      tags: [deploy, config]
+
+    - name: Create .env file for production
+      copy:
+        content: |
+          # PostgreSQL Configuration
+          POSTGRES_DB=smartexpense
+          POSTGRES_USER=smartexpense
+          POSTGRES_PASSWORD={{ lookup('env', 'DB_PASSWORD') | default('changeme_in_production', true) }}
+          
+          # Backend Configuration
+          NODE_ENV=production
+          PORT=4000
+          DB_HOST=postgres
+          DB_PORT=5432
+          DB_NAME=smartexpense
+          DB_USER=smartexpense
+          DB_PASSWORD={{ lookup('env', 'DB_PASSWORD') | default('changeme_in_production', true) }}
+          JWT_SECRET={{ lookup('env', 'JWT_SECRET') | default('change_this_secret_key', true) }}
+          CORS_ORIGIN=http://{{ ansible_host }}
+          
+          # Frontend Configuration
+          REACT_APP_API_URL=/api
+        dest: "{{ app_dir }}/.env"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0600'
+      tags: [deploy, config]
+      no_log: true  # Don't log sensitive data
+
+    # ==================================
+    # DOCKER IMAGE MANAGEMENT
+    # ==================================
+    - name: Log in to Docker Hub
+      community.docker.docker_login:
+        username: "{{ docker_hub_user }}"
+        password: "{{ lookup('env', 'DOCKERHUB_TOKEN') }}"
+      when: lookup('env', 'DOCKERHUB_TOKEN', default='') != ''
+      tags: [deploy]
+      no_log: true
+
+    - name: Pull latest backend image
+      community.docker.docker_image:
+        name: "{{ docker_hub_user }}/smartexpense-backend"
+        tag: latest
+        source: pull
+        force_source: yes
+      tags: [deploy]
+
+    - name: Pull latest frontend image
+      community.docker.docker_image:
+        name: "{{ docker_hub_user }}/smartexpense-frontend"
+        tag: latest
+        source: pull
+        force_source: yes
+      tags: [deploy]
+
+    - name: Pull PostgreSQL image
+      community.docker.docker_image:
+        name: postgres
+        tag: "16-alpine"
+        source: pull
+      tags: [deploy]
+
+    # ==================================
+    # CLEANUP OLD DEPLOYMENT
+    # ==================================
+    - name: Stop existing containers
+      community.docker.docker_compose:
+        project_src: "{{ app_dir }}"
+        state: absent
+      ignore_errors: yes
+      tags: [deploy]
+
+    - name: Prune unused Docker resources
+      community.docker.docker_prune:
+        containers: yes
+        images: yes
+        networks: yes
+        volumes: no  # Keep database volumes!
+        builder_cache: yes
+      tags: [deploy, cleanup]
+
+    # ==================================
+    # DEPLOY APPLICATION
+    # ==================================
+    - name: Start application with Docker Compose
+      community.docker.docker_compose:
+        project_src: "{{ app_dir }}"
+        state: present
+        pull: yes
+        remove_orphans: yes
+      register: compose_output
+      tags: [deploy]
+
+    - name: Display deployment status
+      debug:
+        var: compose_output
+      tags: [deploy]
+
+    # ==================================
+    # HEALTH CHECKS
+    # ==================================
+    - name: Wait for PostgreSQL to be healthy
+      wait_for:
+        host: localhost
+        port: 5432
+        delay: 5
+        timeout: 60
+        state: started
+      tags: [deploy, healthcheck]
+
+    - name: Wait for backend API to be ready
+      uri:
+        url: "http://localhost:4000/health"
+        status_code: 200
+        timeout: 5
+      register: backend_health
+      until: backend_health.status == 200
+      retries: 12
+      delay: 5
+      tags: [deploy, healthcheck]
+      ignore_errors: yes
+
+    - name: Wait for frontend to be ready
+      wait_for:
+        host: localhost
+        port: 8080
+        delay: 5
+        timeout: 30
+        state: started
+      tags: [deploy, healthcheck]
+
+    - name: Check all containers are running
+      command: docker-compose -f {{ app_dir }}/docker-compose.yml ps
+      register: containers_status
+      changed_when: false
+      tags: [deploy, healthcheck]
+
+    - name: Display container status
+      debug:
+        var: containers_status.stdout_lines
+      tags: [deploy, healthcheck]
+
+    # ==================================
+    # POST-DEPLOYMENT TASKS
+    # ==================================
+    - name: Setup log rotation for Docker logs
+      copy:
+        content: |
+          /var/lib/docker/containers/*/*.log {
+            rotate 7
+            daily
+            compress
+            size=10M
+            missingok
+            delaycompress
+            copytruncate
+          }
+        dest: /etc/logrotate.d/docker-containers
+        mode: '0644'
+      tags: [deploy, maintenance]
+
+    - name: Create backup script
+      copy:
+        content: |
+          #!/bin/bash
+          # Backup PostgreSQL database
+          BACKUP_DIR=/opt/backups
+          DATE=$(date +%Y%m%d_%H%M%S)
+          
+          mkdir -p $BACKUP_DIR
+          docker exec smartexpense-postgres pg_dump -U smartexpense smartexpense > $BACKUP_DIR/backup_$DATE.sql
+          
+          # Keep only last 7 backups
+          ls -t $BACKUP_DIR/backup_*.sql | tail -n +8 | xargs rm -f
+        dest: /usr/local/bin/backup-smartexpense.sh
+        mode: '0755'
+      tags: [deploy, maintenance]
+
+    - name: Setup daily backup cron job
+      cron:
+        name: "Daily SmartExpense backup"
+        minute: "0"
+        hour: "2"
+        job: "/usr/local/bin/backup-smartexpense.sh"
+        user: root
+      tags: [deploy, maintenance]
+
+    # ==================================
+    # FINAL STATUS
+    # ==================================
+    - name: Deployment Summary
+      debug:
+        msg:
+          - "========================================="
+          - "SmartExpense Deployment Complete!"
+          - "========================================="
+          - "Application URL: http://{{ ansible_host }}:8080"
+          - "Backend API: http://{{ ansible_host }}:4000"
+          - "Check logs: docker-compose -f {{ app_dir }}/docker-compose.yml logs -f"
+          - "========================================="
+      tags: [always]
