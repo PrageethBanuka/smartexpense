@@ -15,9 +15,7 @@ services:
       retries: 10
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.prod
+    image: banukarajapaksha/smartexpense-backend:latest
     environment:
       NODE_ENV: production
       PORT: 4000
@@ -27,23 +25,20 @@ services:
       DB_USER: smartexpense
       DB_PASSWORD: smartexpense
       JWT_SECRET: change-me-in-prod
-      CORS_ORIGIN: http://localhost
+      CORS_ORIGIN: http://44.215.84.51:8080
     depends_on:
       postgres:
         condition: service_healthy
-    expose:
-      - '4000'
+    ports:
+      - '4000:4000'
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
-      args:
-        REACT_APP_API_URL: /api
+    image: banukarajapaksha/smartexpense-frontend:latest
     ports:
       - '8080:80'
     depends_on:
       - backend
+      
 
 volumes:
   pgdata:

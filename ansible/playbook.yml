@@ -197,7 +197,7 @@
     # CLEANUP OLD DEPLOYMENT
     # ==================================
     - name: Stop existing containers
-      community.docker.docker_compose:
+      community.docker.docker_compose_v2:
         project_src: "{{ app_dir }}"
         state: absent
       ignore_errors: yes
@@ -216,10 +216,10 @@
     # DEPLOY APPLICATION
     # ==================================
     - name: Start application with Docker Compose
-      community.docker.docker_compose:
+      community.docker.docker_compose_v2:
         project_src: "{{ app_dir }}"
         state: present
-        pull: yes
+        pull: always
         remove_orphans: yes
       register: compose_output
       tags: [deploy]
@@ -232,14 +232,14 @@
     # ==================================
     # HEALTH CHECKS
     # ==================================
-    - name: Wait for PostgreSQL to be healthy
-      wait_for:
-        host: localhost
-        port: 5432
-        delay: 5
-        timeout: 60
-        state: started
-      tags: [deploy, healthcheck]
+    # - name: Wait for PostgreSQL to be healthy
+    #   wait_for:
+    #     host: localhost
+    #     port: 5432
+    #     delay: 5
+    #     timeout: 60
+    #     state: started
+    #   tags: [deploy, healthcheck]
 
     - name: Wait for backend API to be ready
       uri:
