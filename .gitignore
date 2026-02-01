@@ -45,10 +45,13 @@ terraform/terraform.tfvars
 terraform/*.tfvars
 terraform/.terraform.tfstate.lock.info
 terraform/crash.log
+terraform/terraform.tfplan
 
 # Ansible
 ansible/ansible_env.sh
 ansible/*.retry
+ansible/group_vars/
+ansible/host_vars/
 /tmp/ansible_facts
 
 # Deployment info
@@ -60,5 +63,10 @@ deployment-info.txt
 *.pdf
 *.PDF
 *.html
+
+# Submission artifacts
+*.zip
+SmartExpense_Submission.zip
+TEAM_MEMBERS.txt
 
 
