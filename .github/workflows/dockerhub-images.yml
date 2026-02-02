@@ -67,16 +67,6 @@ jobs:
         run: |
           # Setup SSH
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
-          
-          # Deploy via SSH
-          ssh -i ~/.ssh/deploy_key $EC2_USER@$EC2_HOST << 'ENDSSH'
-            set -e
-            cd /opt/smartexpense
-            
-          # Use printf to preserve newlines in the key
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
@@ -85,7 +75,7 @@ jobs:
           head -1 ~/.ssh/deploy_key | grep -q "BEGIN.*PRIVATE KEY" || (echo "Invalid key format" && exit 1)
           
           # Deploy via SSH
-          ssh -i ~/.ssh/deploy_key $EC2_USER@$EC2_HOST /bin/bash << 'ENDSSH'
+          ssh -i ~/.ssh/deploy_key $EC2_USER@$EC2_HOST 'bash -s' << 'ENDSSH'
             set -e
             
             # Create app directory if it doesn't exist
@@ -93,10 +83,10 @@ jobs:
             sudo chown ubuntu:ubuntu /opt/smartexpense
             cd /opt/smartexpense
             
-            # Copy docker-compose file if it doesn't exist
+            # Create docker-compose file if it doesn't exist
             if [ ! -f docker-compose.prod.yml ]; then
               echo "Creating docker-compose.prod.yml..."
-              cat > docker-compose.prod.yml <<'COMPOSE'
+              tee docker-compose.prod.yml > /dev/null << 'COMPOSE'
 version: '3.9'
 services:
   postgres:
