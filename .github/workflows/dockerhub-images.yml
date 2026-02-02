@@ -85,7 +85,7 @@ jobs:
           head -1 ~/.ssh/deploy_key | grep -q "BEGIN.*PRIVATE KEY" || (echo "Invalid key format" && exit 1)
           
           # Deploy via SSH
-          ssh -i ~/.ssh/deploy_key $EC2_USER@$EC2_HOST << 'ENDSSH'
+          ssh -i ~/.ssh/deploy_key $EC2_USER@$EC2_HOST /bin/bash << 'ENDSSH'
             set -e
             
             # Create app directory if it doesn't exist
@@ -96,7 +96,7 @@ jobs:
             # Copy docker-compose file if it doesn't exist
             if [ ! -f docker-compose.prod.yml ]; then
               echo "Creating docker-compose.prod.yml..."
-              cat > docker-compose.prod.yml << 'EOF'
+              cat > docker-compose.prod.yml <<'COMPOSE'
 version: '3.9'
 services:
   postgres:
@@ -107,6 +107,7 @@ services:
       POSTGRES_PASSWORD: smartexpense
     volumes:
       - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U smartexpense -d smartexpense"]
       interval: 5s
@@ -124,12 +125,13 @@ services:
       DB_USER: smartexpense
       DB_PASSWORD: smartexpense
       JWT_SECRET: change-me-in-prod
-      CORS_ORIGIN: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):8080
+      CORS_ORIGIN: "*"
     depends_on:
       postgres:
         condition: service_healthy
     ports:
       - '4000:4000'
+    restart: unless-stopped
 
   frontend:
     image: banukarajapaksha/smartexpense-frontend:latest
@@ -137,10 +139,11 @@ services:
       - '8080:80'
     depends_on:
       - backend
+    restart: unless-stopped
 
 volumes:
   pgdata:
-EOF
+COMPOSE
             fi
             
             # Pull latest images
@@ -153,7 +156,7 @@ EOF
             docker image prune -f
             
             echo "Deployment complete!"
-          ENDSSH
+ENDSSH
           
       - name: Verify deployment
         env:
