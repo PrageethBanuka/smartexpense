@@ -76,6 +76,73 @@ jobs:
             set -e
             cd /opt/smartexpense
             
+          # Use printf to preserve newlines in the key
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
+          
+          # Verify key format
+          head -1 ~/.ssh/deploy_key | grep -q "BEGIN.*PRIVATE KEY" || (echo "Invalid key format" && exit 1)
+          
+          # Deploy via SSH
+          ssh -i ~/.ssh/deploy_key $EC2_USER@$EC2_HOST << 'ENDSSH'
+            set -e
+            
+            # Create app directory if it doesn't exist
+            sudo mkdir -p /opt/smartexpense
+            sudo chown ubuntu:ubuntu /opt/smartexpense
+            cd /opt/smartexpense
+            
+            # Copy docker-compose file if it doesn't exist
+            if [ ! -f docker-compose.prod.yml ]; then
+              echo "Creating docker-compose.prod.yml..."
+              cat > docker-compose.prod.yml << 'EOF'
+version: '3.9'
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: smartexpense
+      POSTGRES_USER: smartexpense
+      POSTGRES_PASSWORD: smartexpense
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartexpense -d smartexpense"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    image: banukarajapaksha/smartexpense-backend:latest
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: smartexpense
+      DB_USER: smartexpense
+      DB_PASSWORD: smartexpense
+      JWT_SECRET: change-me-in-prod
+      CORS_ORIGIN: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '4000:4000'
+
+  frontend:
+    image: banukarajapaksha/smartexpense-frontend:latest
+    ports:
+      - '8080:80'
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+EOF
+            fi
+            
             # Pull latest images
             docker-compose -f docker-compose.prod.yml pull
             
