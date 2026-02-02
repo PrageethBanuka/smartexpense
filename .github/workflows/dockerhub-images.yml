@@ -59,94 +59,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Deploy to EC2
+      - name: Copy docker-compose to EC2
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ubuntu
         run: |
-          # Setup SSH
           mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
           
-          # Verify key format
-          head -1 ~/.ssh/deploy_key | grep -q "BEGIN.*PRIVATE KEY" || (echo "Invalid key format" && exit 1)
-          
-          # Deploy via SSH
-          ssh -i ~/.ssh/deploy_key $EC2_USER@$EC2_HOST 'bash -s' << 'ENDSSH'
-            set -e
-            
-            # Create app directory if it doesn't exist
-            sudo mkdir -p /opt/smartexpense
-            sudo chown ubuntu:ubuntu /opt/smartexpense
-            cd /opt/smartexpense
-            
-            # Create docker-compose file if it doesn't exist
-            if [ ! -f docker-compose.prod.yml ]; then
-              echo "Creating docker-compose.prod.yml..."
-              tee docker-compose.prod.yml > /dev/null << 'COMPOSE'
-version: '3.9'
-services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: smartexpense
-      POSTGRES_USER: smartexpense
-      POSTGRES_PASSWORD: smartexpense
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U smartexpense -d smartexpense"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-
-  backend:
-    image: banukarajapaksha/smartexpense-backend:latest
-    environment:
-      NODE_ENV: production
-      PORT: 4000
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: smartexpense
-      DB_USER: smartexpense
-      DB_PASSWORD: smartexpense
-      JWT_SECRET: change-me-in-prod
-      CORS_ORIGIN: "*"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    ports:
-      - '4000:4000'
-    restart: unless-stopped
-
-  frontend:
-    image: banukarajapaksha/smartexpense-frontend:latest
-    ports:
-      - '8080:80'
-    depends_on:
-      - backend
-    restart: unless-stopped
-
-volumes:
-  pgdata:
-COMPOSE
-            fi
-            
-            # Pull latest images
-            docker-compose -f docker-compose.prod.yml pull
-            
-            # Restart containers with new images
-            docker-compose -f docker-compose.prod.yml up -d --force-recreate
-            
-            # Clean up old images
-            docker image prune -f
-            
-            echo "Deployment complete!"
-ENDSSH
+          # Create directory and copy docker-compose file
+          ssh -i ~/.ssh/deploy_key ubuntu@$EC2_HOST "sudo mkdir -p /opt/smartexpense && sudo chown ubuntu:ubuntu /opt/smartexpense"
+          scp -i ~/.ssh/deploy_key docker-compose.prod.yml ubuntu@$EC2_HOST:/opt/smartexpense/
+      
+      - name: Deploy containers
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          ssh -i ~/.ssh/deploy_key ubuntu@$EC2_HOST "cd /opt/smartexpense && docker-compose -f docker-compose.prod.yml pull && docker-compose -f docker-compose.prod.yml up -d --force-recreate && docker image prune -f"
           
       - name: Verify deployment
         env:
