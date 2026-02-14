@@ -14,7 +14,7 @@ function App() {
       <header className="header">
         <div className="container" style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
           <h1 style={{ margin: 0 }}>SmartExpense 🔗</h1>
-          <nav style={{ display: 'flex', gap: '0.75rem' }}>
+          <nav style={{ display: 'flex', gap: '2rem' }}>
             <Link to="/">Home</Link>
             <Link to="/login">Login</Link>
             <Link to="/register">Register</Link>
