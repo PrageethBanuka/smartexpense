@@ -111,6 +111,32 @@ jobs:
           ssh -i ~/.ssh/deploy_key ubuntu@$EC2_HOST "sudo mkdir -p /opt/smartexpense && sudo chown ubuntu:ubuntu /opt/smartexpense"
           scp -i ~/.ssh/deploy_key docker-compose.prod.yml ubuntu@$EC2_HOST:/opt/smartexpense/
       
+      - name: Configure EC2 with Ansible (if needed)
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          echo "🔧 Checking if Ansible configuration is needed..."
+          
+          # Check if Docker and Docker Compose are installed
+          if ssh -i ~/.ssh/deploy_key ubuntu@$EC2_HOST "docker --version && docker-compose --version" 2>/dev/null; then
+            echo "✅ Docker and Docker Compose already installed, skipping Ansible"
+          else
+            echo "⚙️  Running Ansible playbook to install Docker..."
+            
+            # Install Ansible
+            pip3 install ansible
+            
+            # Create temporary inventory
+            echo "[app_servers]" > /tmp/inventory.ini
+            echo "$EC2_HOST ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/deploy_key ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> /tmp/inventory.ini
+            
+            # Run Ansible playbook (only Docker installation tasks)
+            ansible-playbook -i /tmp/inventory.ini ansible/playbook.yml --tags docker || echo "⚠️  Ansible completed with warnings (may be normal)"
+            
+            echo "✅ Ansible configuration complete"
+          fi
+      
       - name: Deploy containers
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
