@@ -12,7 +12,7 @@ function App() {
   return (
     <div>
       <header className="header">
-        <div className="container" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div className="container" style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
           <h1 style={{ margin: 0 }}>SmartExpense</h1>
           <nav style={{ display: 'flex', gap: '0.75rem' }}>
             <Link to="/">Home</Link>
