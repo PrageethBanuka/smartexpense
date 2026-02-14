@@ -117,11 +117,30 @@ jobs:
           EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
           ssh -i ~/.ssh/deploy_key ubuntu@$EC2_HOST "cd /opt/smartexpense && docker-compose -f docker-compose.prod.yml pull && docker-compose -f docker-compose.prod.yml up -d --force-recreate && docker image prune -f"
+      
+      - name: Wait for services to stabilize
+        run: sleep 20
           
-      - name: Verify deployment
+      - name: Health check - Verify all services
         env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
-          echo "Application deployed to: http://$EC2_HOST:8080"
-          sleep 10
-          curl -f http://$EC2_HOST:8080 || echo "Health check - verify manually"
+          echo "🔍 Running comprehensive health checks..."
+          
+          # Check Frontend
+          echo "Checking Frontend (http://$EC2_HOST:8080)..."
+          if curl -f -s -o /dev/null -w "%{http_code}" http://$EC2_HOST:8080 | grep -q "200"; then
+            echo "✅ Frontend is responding (HTTP 200)"
+          else
+            echo "❌ Frontend health check failed"
+            exit 1
+          fi
+          
+          # Check all containers are running
+          echo "Verifying all containers are running..."
+          ssh -i ~/.ssh/deploy_key ubuntu@$EC2_HOST "cd /opt/smartexpense && docker-compose ps --format json" || ssh -i ~/.ssh/deploy_key ubuntu@$EC2_HOST "cd /opt/smartexpense && docker-compose ps"
+          
+          echo ""
+          echo "🎉 Deployment successful!"
+          echo "📍 Application URL: http://$EC2_HOST:8080"
