@@ -13,7 +13,7 @@ function App() {
     <div>
       <header className="header">
         <div className="container" style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-          <h1 style={{ margin: 0 }}>SmartExpense 🔗</h1>
+          <h1 style={{ margin: 0 }}>Banuka Rajapaksha</h1>
           <nav style={{ display: 'flex', gap: '2rem' }}>
             <Link to="/">Home</Link>
             <Link to="/login">Login</Link>
