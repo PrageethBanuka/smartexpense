@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Lock, Mail, LogIn, Loader2, CheckCircle } from 'lucide-react';
 import api from '../services/api';
 
 export default function Login() {
@@ -33,7 +34,11 @@ export default function Login() {
     <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div className="card" style={{ maxWidth: '450px' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🔐</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+            <div style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', borderRadius: '14px', padding: '0.9rem', display: 'inline-flex' }}>
+              <Lock size={32} color="white" strokeWidth={2} />
+            </div>
+          </div>
           <h2 style={{ fontSize: '1.75rem', fontWeight: '800', margin: 0 }}>Welcome Back</h2>
           <p style={{ color: 'var(--fg-muted)', marginTop: '0.5rem', fontSize: '0.95rem' }}>
             Log in to continue managing your expenses
@@ -41,7 +46,9 @@ export default function Login() {
         </div>
 
         <form onSubmit={onSubmit}>
-          <label htmlFor="email">📧 Email Address</label>
+          <label htmlFor="email" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <Mail size={14} /> Email Address
+          </label>
           <input 
             id="email" 
             type="email" 
@@ -51,7 +58,9 @@ export default function Login() {
             placeholder="you@example.com"
           />
 
-          <label htmlFor="password">🔑 Password</label>
+          <label htmlFor="password" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <Lock size={14} /> Password
+          </label>
           <input 
             id="password" 
             type="password" 
@@ -61,13 +70,13 @@ export default function Login() {
             placeholder="Enter your password"
           />
 
-          <button type="submit" disabled={loading} style={{ marginTop: '1.5rem' }}>
-            {loading ? '🔄 Logging in…' : '🚀 Login'}
+          <button type="submit" disabled={loading} style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+            {loading ? <><Loader2 size={16} className="spin" /> Logging in…</> : <><LogIn size={16} /> Login</>}
           </button>
         </form>
         
         {error && <p className="error">{error}</p>}
-        {notice && <p className="result">✅ {notice}</p>}
+        {notice && <p className="result" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><CheckCircle size={16} /> {notice}</p>}
         
         <div style={{ 
           marginTop: '1.5rem', 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { CreditCard, Calendar, Plus, Save, X, List, Pencil, Trash2, Loader2, CheckCircle, FileText } from 'lucide-react';
 import api from '../services/api';
 
 const CATEGORIES = ['food', 'transport', 'bills', 'entertainment', 'other'];
@@ -77,7 +78,9 @@ export default function Expenses() {
 
   return (
     <div className="card card-wide">
-      <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem' }}>💳 Expenses</h2>
+      <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <CreditCard size={28} /> Expenses
+      </h2>
       <div style={{ 
         display: 'flex', 
         gap: '1.5rem', 
@@ -88,8 +91,8 @@ export default function Expenses() {
         borderBottom: '1px solid var(--glass-border)'
       }}>
         <div style={{ flex: '1', minWidth: '200px' }}>
-          <label htmlFor="month" style={{ marginBottom: '0.5rem', display: 'block', fontSize: '0.9rem' }}>
-            📅 Select Month
+          <label htmlFor="month" style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem' }}>
+            <Calendar size={14} /> Select Month
           </label>
           <input 
             id="month" 
@@ -105,10 +108,10 @@ export default function Expenses() {
             ${total.toFixed(2)}
           </div>
         </div>
-        {loading && <span style={{ color: 'var(--primary)' }}>⏳ Loading…</span>}
+        {loading && <span style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Loader2 size={16} className="spin" /> Loading…</span>}
       </div>
       {error && <p className="error">{error}</p>}
-      {notice && <p className="result">✅ {notice}</p>}
+      {notice && <p className="result" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><CheckCircle size={16} /> {notice}</p>}
 
       <form onSubmit={onSubmit} style={{ 
         marginTop: '1.5rem', 
@@ -117,8 +120,8 @@ export default function Expenses() {
         borderRadius: '12px',
         border: '1px solid var(--card-border)' 
       }}>
-        <h3 style={{ marginTop: 0, marginBottom: '1.25rem', fontSize: '1.25rem', fontWeight: '700' }}>
-          {editingId ? '✏️ Edit Expense' : '➕ Add New Expense'}
+        <h3 style={{ marginTop: 0, marginBottom: '1.25rem', fontSize: '1.25rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {editingId ? <><Pencil size={18} /> Edit Expense</> : <><Plus size={18} /> Add New Expense</>}
         </h3>
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
@@ -179,28 +182,28 @@ export default function Expenses() {
         </div>
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
-          <button type="submit" disabled={saving} style={{ flex: '1', minWidth: '150px' }}>
-            {saving ? '⏳ Saving…' : editingId ? '💾 Update' : '➕ Add'}
+          <button type="submit" disabled={saving} style={{ flex: '1', minWidth: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+            {saving ? <><Loader2 size={16} className="spin" /> Saving…</> : editingId ? <><Save size={16} /> Update</> : <><Plus size={16} /> Add</>}
           </button>
           {editingId && (
             <button 
               type="button" 
               className="secondary"
-              style={{ flex: '1', minWidth: '150px', marginTop: 0 }} 
+              style={{ flex: '1', minWidth: '150px', marginTop: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }} 
               onClick={() => { 
                 setEditingId(null); 
                 setForm({ amount: '', category: 'food', note: '', occurredOn: new Date().toISOString().slice(0,10) }); 
               }}
             >
-              ❌ Cancel
+              <X size={16} /> Cancel
             </button>
           )}
         </div>
       </form>
 
       <div style={{ marginTop: '2.5rem' }}>
-        <h3 style={{ marginTop: 0, marginBottom: '1.25rem', fontSize: '1.25rem', fontWeight: '700' }}>
-          📋 Expense List
+        <h3 style={{ marginTop: 0, marginBottom: '1.25rem', fontSize: '1.25rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <List size={20} /> Expense List
         </h3>
         {list.length === 0 && !loading && (
           <div style={{ 
@@ -211,7 +214,7 @@ export default function Expenses() {
             border: '1px solid var(--card-border)',
             color: 'var(--fg-muted)' 
           }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>📝</div>
+            <FileText size={48} style={{ marginBottom: '1rem', opacity: 0.4, display: 'block', margin: '0 auto 1rem' }} />
             <p style={{ margin: 0, fontSize: '1.05rem' }}>No expenses for this month yet.</p>
             <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>Start tracking by adding your first expense above!</p>
           </div>
@@ -250,7 +253,7 @@ export default function Expenses() {
                   }}>
                     {exp.category.charAt(0).toUpperCase() + exp.category.slice(1)}
                   </span>
-                  📅 {exp.occurredOn}
+                  <Calendar size={13} style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} />{exp.occurredOn}
                 </div>
                 {exp.note && (
                   <div style={{ 
@@ -276,10 +279,13 @@ export default function Expenses() {
                     color: 'var(--primary)',
                     boxShadow: 'none',
                     fontSize: '0.9rem',
-                    width: 'auto'
+                    width: 'auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem'
                   }}
                 >
-                  ✏️ Edit
+                  <Pencil size={14} /> Edit
                 </button>
                 <button 
                   type="button" 
@@ -288,10 +294,13 @@ export default function Expenses() {
                   style={{ 
                     padding: '0.5rem 1rem',
                     fontSize: '0.9rem',
-                    width: 'auto'
+                    width: 'auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem'
                   }}
                 >
-                  🗑️ Delete
+                  <Trash2 size={14} /> Delete
                 </button>
               </div>
             </li>

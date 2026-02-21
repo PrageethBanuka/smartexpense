@@ -60,6 +60,10 @@ body::before {
   to { transform: rotate(360deg); }
 }
 
+.spin {
+  animation: rotate 1s linear infinite;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { User, Mail, Lock, Shield, UserPlus, Loader2, CheckCircle } from 'lucide-react';
 import api from '../services/api';
 
 export default function Register() {
@@ -34,7 +35,11 @@ export default function Register() {
     <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div className="card" style={{ maxWidth: '450px' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>✨</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+            <div style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', borderRadius: '14px', padding: '0.9rem', display: 'inline-flex' }}>
+              <UserPlus size={32} color="white" strokeWidth={2} />
+            </div>
+          </div>
           <h2 style={{ fontSize: '1.75rem', fontWeight: '800', margin: 0 }}>Create Account</h2>
           <p style={{ color: 'var(--fg-muted)', marginTop: '0.5rem', fontSize: '0.95rem' }}>
             Start tracking your expenses today
@@ -42,7 +47,7 @@ export default function Register() {
         </div>
 
         <form onSubmit={onSubmit}>
-          <label htmlFor="name">👤 Full Name</label>
+          <label htmlFor="name" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><User size={14} /> Full Name</label>
           <input 
             id="name" 
             type="text" 
@@ -52,7 +57,7 @@ export default function Register() {
             placeholder="John Doe"
           />
 
-          <label htmlFor="email">📧 Email Address</label>
+          <label htmlFor="email" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Mail size={14} /> Email Address</label>
           <input 
             id="email" 
             type="email" 
@@ -62,7 +67,7 @@ export default function Register() {
             placeholder="you@example.com"
           />
 
-          <label htmlFor="password">🔑 Password</label>
+          <label htmlFor="password" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Lock size={14} /> Password</label>
           <input 
             id="password" 
             type="password" 
@@ -72,17 +77,17 @@ export default function Register() {
             minLength={6}
             placeholder="At least 6 characters"
           />
-          <div style={{ fontSize: '0.85rem', color: 'var(--fg-subtle)', marginTop: '0.5rem' }}>
-            🛡️ Password must be at least 6 characters
+          <div style={{ fontSize: '0.85rem', color: 'var(--fg-subtle)', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <Shield size={13} /> Password must be at least 6 characters
           </div>
 
-          <button type="submit" disabled={loading} style={{ marginTop: '1.5rem' }}>
-            {loading ? '⏳ Creating…' : '🚀 Create Account'}
+          <button type="submit" disabled={loading} style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+            {loading ? <><Loader2 size={16} className="spin" /> Creating…</> : <><UserPlus size={16} /> Create Account</>}
           </button>
         </form>
         
         {error && <p className="error">{error}</p>}
-        {notice && <p className="result">✅ {notice}</p>}
+        {notice && <p className="result" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><CheckCircle size={16} /> {notice}</p>}
         
         <div style={{ 
           marginTop: '1.5rem', 

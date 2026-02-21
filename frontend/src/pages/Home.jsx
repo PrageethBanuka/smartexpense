@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { BarChart2, Shield, Zap, ArrowRight, DollarSign } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -7,14 +8,18 @@ export default function Home() {
       <div className="card" style={{ textAlign: 'center', maxWidth: '700px' }}>
         {/* Hero Icon */}
         <div style={{ 
-          fontSize: '4rem', 
+          display: 'flex',
+          justifyContent: 'center',
           marginBottom: '1rem',
-          background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
         }}>
-          💰
+          <div style={{
+            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+            borderRadius: '20px',
+            padding: '1.2rem',
+            display: 'inline-flex',
+          }}>
+            <DollarSign size={48} color="white" strokeWidth={2.5} />
+          </div>
         </div>
         
         {/* Title */}
@@ -55,7 +60,7 @@ export default function Home() {
             borderRadius: '10px',
             border: '1px solid rgba(59, 130, 246, 0.2)'
           }}>
-            <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📊</div>
+            <div style={{ marginBottom: '0.5rem' }}><BarChart2 size={24} color="#3b82f6" /></div>
             <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>Visual Reports</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--fg-muted)' }}>
               Charts and insights
@@ -68,7 +73,7 @@ export default function Home() {
             borderRadius: '10px',
             border: '1px solid rgba(139, 92, 246, 0.2)'
           }}>
-            <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🔐</div>
+            <div style={{ marginBottom: '0.5rem' }}><Shield size={24} color="#8b5cf6" /></div>
             <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>Secure & Private</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--fg-muted)' }}>
               Your data is safe
@@ -81,7 +86,7 @@ export default function Home() {
             borderRadius: '10px',
             border: '1px solid rgba(16, 185, 129, 0.2)'
           }}>
-            <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>⚡</div>
+            <div style={{ marginBottom: '0.5rem' }}><Zap size={24} color="#10b981" /></div>
             <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>Easy Tracking</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--fg-muted)' }}>
               Quick and simple
@@ -96,8 +101,8 @@ export default function Home() {
           justifyContent: 'center', 
           flexWrap: 'wrap'
         }}>
-          <Link className="button" to="/register" style={{ minWidth: '200px' }}>
-            🚀 Get Started
+          <Link className="button" to="/register" style={{ minWidth: '200px', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+            <ArrowRight size={18} /> Get Started
           </Link>
           <Link 
             className="button secondary" 

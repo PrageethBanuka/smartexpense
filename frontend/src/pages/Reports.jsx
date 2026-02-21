@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Pie, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
+import { TrendingUp, TrendingDown, Target, PieChart, BarChart2, DollarSign, Loader2 } from 'lucide-react';
 import api from '../services/api';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
@@ -90,7 +91,9 @@ export default function Reports() {
 
   return (
     <div className="card card-wide">
-      <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '1rem' }}>📈 Reports & Analytics</h2>
+      <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <TrendingUp size={28} /> Reports &amp; Analytics
+      </h2>
       <p style={{ color: 'var(--fg-muted)', marginBottom: '2rem', fontSize: '1.05rem' }}>
         Visualize your spending patterns and track financial trends over time.
       </p>
@@ -104,8 +107,8 @@ export default function Reports() {
         marginBottom: '2.5rem'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
-          <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700' }}>
-            🎯 Category Distribution
+          <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Target size={22} /> Category Distribution
           </h3>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
             <label htmlFor="month" style={{ margin: 0, fontSize: '0.95rem', color: 'var(--fg-muted)' }}>
@@ -124,7 +127,7 @@ export default function Reports() {
 
         {loadingCat && (
           <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--fg-muted)' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⏳</div>
+            <Loader2 size={32} className="spin" style={{ marginBottom: '1rem', display: 'block', margin: '0 auto 1rem' }} />
             Loading category data...
           </div>
         )}
@@ -177,7 +180,7 @@ export default function Reports() {
           </div>
         ) : (!loadingCat && (
           <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--fg-muted)' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>📊</div>
+            <PieChart size={48} style={{ marginBottom: '1rem', opacity: 0.4, display: 'block', margin: '0 auto 1rem' }} />
             <p style={{ margin: 0, fontSize: '1.05rem' }}>No data for selected month.</p>
             <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>Add expenses to see category distribution!</p>
           </div>
@@ -191,12 +194,12 @@ export default function Reports() {
         borderRadius: '12px',
         border: '1px solid var(--card-border)'
       }}>
-        <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: '700' }}>
-          📊 6-Month Spending Trend
+        <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <BarChart2 size={22} /> 6-Month Spending Trend
         </h3>
         {loadingForecast && (
           <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--fg-muted)' }}>
-            <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⏳</div>
+            <Loader2 size={32} className="spin" style={{ marginBottom: '1rem', display: 'block', margin: '0 auto 1rem' }} />
             Loading trend data...
           </div>
         )}
@@ -254,19 +257,19 @@ export default function Reports() {
               gap: '1rem'
             }}>
               <div className="stat-card" style={{ margin: 0 }}>
-                <div className="stat-label">💵 Average/Month</div>
+                <div className="stat-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><DollarSign size={14} /> Average/Month</div>
                 <div className="stat-value" style={{ fontSize: '1.5rem' }}>
                   ${(forecastData.reduce((sum, r) => sum + r.total, 0) / forecastData.length).toFixed(2)}
                 </div>
               </div>
               <div className="stat-card" style={{ margin: 0 }}>
-                <div className="stat-label">📈 Highest Month</div>
+                <div className="stat-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><TrendingUp size={14} /> Highest Month</div>
                 <div className="stat-value" style={{ fontSize: '1.5rem' }}>
                   ${Math.max(...forecastData.map(r => r.total)).toFixed(2)}
                 </div>
               </div>
               <div className="stat-card" style={{ margin: 0 }}>
-                <div className="stat-label">📉 Lowest Month</div>
+                <div className="stat-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><TrendingDown size={14} /> Lowest Month</div>
                 <div className="stat-value" style={{ fontSize: '1.5rem' }}>
                   ${Math.min(...forecastData.map(r => r.total)).toFixed(2)}
                 </div>
@@ -275,7 +278,7 @@ export default function Reports() {
           </>
         ) : (!loadingForecast && (
           <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--fg-muted)' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>📊</div>
+            <BarChart2 size={48} style={{ marginBottom: '1rem', opacity: 0.4, display: 'block', margin: '0 auto 1rem' }} />
             <p style={{ margin: 0 }}>No forecast data available.</p>
           </div>
         ))}

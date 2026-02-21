@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
+import { DollarSign, Home as HomeIcon, LogIn, UserPlus, LayoutDashboard, CreditCard, BarChart2 } from 'lucide-react';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -11,29 +12,30 @@ import Expenses from './pages/Expenses';
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
   const location = useLocation();
-  
-  // Check login status whenever the route changes
+
   useEffect(() => {
     setIsLoggedIn(!!localStorage.getItem('token'));
   }, [location]);
-  
+
   return (
     <div>
       <header className="header">
         <div className="container">
-          <h1>💰 SmartExpense</h1>
+          <h1 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <DollarSign size={22} strokeWidth={2.5} /> SmartExpense
+          </h1>
           <nav>
-            <Link to="/">Home</Link>
+            <Link to="/"><HomeIcon size={15} style={{ marginRight: '0.35rem', verticalAlign: 'middle' }} />Home</Link>
             {!isLoggedIn ? (
               <>
-                <Link to="/login">Login</Link>
-                <Link to="/register">Register</Link>
+                <Link to="/login"><LogIn size={15} style={{ marginRight: '0.35rem', verticalAlign: 'middle' }} />Login</Link>
+                <Link to="/register"><UserPlus size={15} style={{ marginRight: '0.35rem', verticalAlign: 'middle' }} />Register</Link>
               </>
             ) : (
               <>
-                <Link to="/dashboard">Dashboard</Link>
-                <Link to="/expenses">Expenses</Link>
-                <Link to="/reports">Reports</Link>
+                <Link to="/dashboard"><LayoutDashboard size={15} style={{ marginRight: '0.35rem', verticalAlign: 'middle' }} />Dashboard</Link>
+                <Link to="/expenses"><CreditCard size={15} style={{ marginRight: '0.35rem', verticalAlign: 'middle' }} />Expenses</Link>
+                <Link to="/reports"><BarChart2 size={15} style={{ marginRight: '0.35rem', verticalAlign: 'middle' }} />Reports</Link>
               </>
             )}
           </nav>
