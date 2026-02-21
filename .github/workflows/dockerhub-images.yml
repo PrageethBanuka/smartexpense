@@ -145,7 +145,9 @@ jobs:
           ssh -i ~/.ssh/deploy_key ubuntu@$EC2_HOST "cd /opt/smartexpense && docker-compose -f docker-compose.prod.yml pull && docker-compose -f docker-compose.prod.yml up -d --force-recreate && docker image prune -f"
       
       - name: Wait for services to stabilize
-        run: sleep 20
+        run: |
+          echo "⏳ Waiting 30 seconds for containers to start..."
+          sleep 30
           
       - name: Health check - Verify all services
         env:
@@ -153,19 +155,46 @@ jobs:
           EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
           echo "🔍 Running comprehensive health checks..."
+          echo ""
           
-          # Check Frontend
-          echo "Checking Frontend (http://$EC2_HOST:8080)..."
-          if curl -f -s -o /dev/null -w "%{http_code}" http://$EC2_HOST:8080 | grep -q "200"; then
-            echo "✅ Frontend is responding (HTTP 200)"
-          else
-            echo "❌ Frontend health check failed"
+          # Check container status first
+          echo "📦 Checking container status..."
+          ssh -i ~/.ssh/deploy_key ubuntu@$EC2_HOST "cd /opt/smartexpense && docker-compose -f docker-compose.prod.yml ps"
+          echo ""
+          
+          # Check if frontend container is running
+          FRONTEND_STATUS=$(ssh -i ~/.ssh/deploy_key ubuntu@$EC2_HOST "cd /opt/smartexpense && docker-compose -f docker-compose.prod.yml ps frontend | grep -c 'Up' || echo '0'")
+          if [ "$FRONTEND_STATUS" = "0" ]; then
+            echo "❌ Frontend container is not running!"
+            echo "📋 Frontend logs:"
+            ssh -i ~/.ssh/deploy_key ubuntu@$EC2_HOST "cd /opt/smartexpense && docker-compose -f docker-compose.prod.yml logs --tail=50 frontend"
             exit 1
           fi
           
-          # Check all containers are running
-          echo "Verifying all containers are running..."
-          ssh -i ~/.ssh/deploy_key ubuntu@$EC2_HOST "cd /opt/smartexpense && docker-compose ps --format json" || ssh -i ~/.ssh/deploy_key ubuntu@$EC2_HOST "cd /opt/smartexpense && docker-compose ps"
+          # Check Frontend HTTP with retries
+          echo "🌐 Checking Frontend (http://$EC2_HOST:8080)..."
+          MAX_RETRIES=5
+          RETRY_DELAY=10
+          
+          for i in $(seq 1 $MAX_RETRIES); do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$EC2_HOST:8080 || echo "000")
+            echo "  Attempt $i/$MAX_RETRIES: HTTP $HTTP_CODE"
+            
+            if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "304" ]; then
+              echo "✅ Frontend is responding (HTTP $HTTP_CODE)"
+              break
+            elif [ $i -eq $MAX_RETRIES ]; then
+              echo "❌ Frontend health check failed after $MAX_RETRIES attempts"
+              echo "📋 Frontend logs:"
+              ssh -i ~/.ssh/deploy_key ubuntu@$EC2_HOST "cd /opt/smartexpense && docker-compose -f docker-compose.prod.yml logs --tail=50 frontend"
+              echo "📋 Backend logs:"
+              ssh -i ~/.ssh/deploy_key ubuntu@$EC2_HOST "cd /opt/smartexpense && docker-compose -f docker-compose.prod.yml logs --tail=30 backend"
+              exit 1
+            else
+              echo "  Waiting ${RETRY_DELAY}s before retry..."
+              sleep $RETRY_DELAY
+            fi
+          done
           
           echo ""
           echo "🎉 Deployment successful!"
