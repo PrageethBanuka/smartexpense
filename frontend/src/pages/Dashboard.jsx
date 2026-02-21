@@ -58,110 +58,156 @@ export default function Dashboard() {
   } : null;
 
   return (
-    <div className="card">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+    <div className="card card-wide">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ margin: 0 }}>Dashboard</h2>
-          <p style={{ color: 'var(--muted)', marginTop: '0.25rem' }}>
-            {user ? `Welcome back, ${user.name}!` : 'Welcome!'}
+          <h2 style={{ margin: 0, fontSize: '2rem', fontWeight: '800' }}>📊 Dashboard</h2>
+          <p style={{ color: 'var(--fg-muted)', marginTop: '0.5rem', fontSize: '1.05rem' }}>
+            {user ? `Welcome back, ${user.name}! 👋` : 'Welcome! 👋'}
           </p>
         </div>
-        <button onClick={logout}>Log out</button>
+        <button onClick={logout} className="danger" style={{ width: 'auto', padding: '0.6rem 1.5rem' }}>
+          🚪 Log out
+        </button>
       </div>
 
-      {loading && <p>Loading dashboard...</p>}
+      {loading && (
+        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--fg-muted)' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⏳</div>
+          Loading dashboard...
+        </div>
+      )}
       {error && <p className="error">{error}</p>}
 
       {!loading && !error && (
         <>
           {/* Summary Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-            <div style={{ border: '1px solid #1f2937', borderRadius: '8px', padding: '1rem', background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)' }}>
-              <div style={{ fontSize: '0.875rem', color: '#bfdbfe', marginBottom: '0.5rem' }}>This Month Total</div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 'bold', color: '#fff' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
+            <div className="stat-card" style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.15) 100%)' }}>
+              <div className="stat-label">💵 This Month Total</div>
+              <div className="stat-value">
                 ${summary?.total?.toFixed(2) || '0.00'}
               </div>
             </div>
-            <div style={{ border: '1px solid #1f2937', borderRadius: '8px', padding: '1rem', background: 'linear-gradient(135deg, #065f46 0%, #10b981 100%)' }}>
-              <div style={{ fontSize: '0.875rem', color: '#d1fae5', marginBottom: '0.5rem' }}>Transactions</div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 'bold', color: '#fff' }}>
+            <div className="stat-card" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%)' }}>
+              <div className="stat-label">📝 Transactions</div>
+              <div className="stat-value">
                 {summary?.count || 0}
               </div>
             </div>
-            <div style={{ border: '1px solid #1f2937', borderRadius: '8px', padding: '1rem', background: 'linear-gradient(135deg, #7c2d12 0%, #f59e0b 100%)' }}>
-              <div style={{ fontSize: '0.875rem', color: '#fed7aa', marginBottom: '0.5rem' }}>Avg per Transaction</div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 'bold', color: '#fff' }}>
+            <div className="stat-card" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.15) 100%)' }}>
+              <div className="stat-label">📊 Avg Transaction</div>
+              <div className="stat-value">
                 ${summary?.count > 0 ? (summary.total / summary.count).toFixed(2) : '0.00'}
               </div>
             </div>
           </div>
 
           {/* Charts and Recent Expenses */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem' }}>
             {/* Category Distribution Pie Chart */}
-            <section>
-              <h3 style={{ marginTop: 0, marginBottom: '1rem' }}>Spending by Category</h3>
+            <section style={{ 
+              background: 'var(--glass-bg)', 
+              padding: '1.5rem', 
+              borderRadius: '12px', 
+              border: '1px solid var(--card-border)' 
+            }}>
+              <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: '700' }}>
+                🎯 Spending by Category
+              </h3>
               {pieData && pieData.labels.length > 0 ? (
-                <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-                  <Pie data={pieData} />
+                <div style={{ maxWidth: '380px', margin: '0 auto' }}>
+                  <Pie data={pieData} options={{ 
+                    plugins: { 
+                      legend: { 
+                        labels: { color: '#e2e8f0', font: { size: 12 } } 
+                      }
+                    }
+                  }} />
                 </div>
               ) : (
-                <p style={{ color: 'var(--muted)', textAlign: 'center', padding: '2rem' }}>
-                  No expenses yet this month. Add your first expense!
-                </p>
+                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--fg-muted)' }}>
+                  <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>📊</div>
+                  <p style={{ margin: 0 }}>No expenses yet this month.</p>
+                  <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>Add your first expense to see the distribution!</p>
+                </div>
               )}
             </section>
 
             {/* Recent Expenses */}
-            <section>
-              <h3 style={{ marginTop: 0, marginBottom: '1rem' }}>Recent Expenses</h3>
+            <section style={{ 
+              background: 'var(--glass-bg)', 
+              padding: '1.5rem', 
+              borderRadius: '12px', 
+              border: '1px solid var(--card-border)' 
+            }}>
+              <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: '700' }}>
+                ⏱️ Recent Expenses
+              </h3>
               {recentExpenses.length > 0 ? (
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {recentExpenses.map(exp => (
-                    <li key={exp.id} style={{ border: '1px solid #1f2937', padding: '0.75rem', borderRadius: 6, marginBottom: '0.5rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#38bdf8' }}>
-                            ${Number(exp.amount).toFixed(2)}
-                          </div>
-                          <div style={{ fontSize: '0.875rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
-                            {exp.category} · {exp.occurredOn}
-                          </div>
-                          {exp.note && (
-                            <div style={{ fontSize: '0.85rem', color: '#9ca3af', marginTop: '0.25rem' }}>
-                              {exp.note}
+                <>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    {recentExpenses.map(exp => (
+                      <li key={exp.id} style={{ 
+                        border: '1px solid var(--glass-border)', 
+                        padding: '1rem', 
+                        borderRadius: '10px', 
+                        marginBottom: '0.75rem',
+                        background: 'rgba(255, 255, 255, 0.03)',
+                        transition: 'all 0.3s ease'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 'bold', fontSize: '1.25rem', color: 'var(--primary-light)' }}>
+                              ${Number(exp.amount).toFixed(2)}
                             </div>
-                          )}
+                            <div style={{ fontSize: '0.9rem', color: 'var(--fg-muted)', marginTop: '0.35rem' }}>
+                              {exp.category.charAt(0).toUpperCase() + exp.category.slice(1)} · {exp.occurredOn}
+                            </div>
+                            {exp.note && (
+                              <div style={{ fontSize: '0.85rem', color: 'var(--fg-subtle)', marginTop: '0.35rem', fontStyle: 'italic' }}>
+                                {exp.note}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                      </li>
+                    ))}
+                  </ul>
+                  <button 
+                    onClick={() => navigate('/expenses')} 
+                    style={{ 
+                      width: '100%', 
+                      marginTop: '1rem', 
+                      background: 'transparent', 
+                      border: '1px solid var(--primary)', 
+                      color: 'var(--primary)',
+                      boxShadow: 'none'
+                    }}
+                  >
+                    View All Expenses →
+                  </button>
+                </>
               ) : (
-                <p style={{ color: 'var(--muted)', textAlign: 'center', padding: '2rem' }}>
-                  No recent expenses
-                </p>
-              )}
-              {recentExpenses.length > 0 && (
-                <button 
-                  onClick={() => navigate('/expenses')} 
-                  style={{ width: '100%', marginTop: '1rem', background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8' }}
-                >
-                  View All Expenses
-                </button>
+                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--fg-muted)' }}>
+                  <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>📝</div>
+                  <p style={{ margin: 0 }}>No recent expenses</p>
+                </div>
               )}
             </section>
           </div>
 
           {/* Quick Actions */}
-          <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid #1f2937' }}>
-            <h3 style={{ marginTop: 0, marginBottom: '1rem' }}>Quick Actions</h3>
+          <div style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid var(--glass-border)' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '1.25rem', fontSize: '1.25rem', fontWeight: '700' }}>
+              ⚡ Quick Actions
+            </h3>
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <button onClick={() => navigate('/expenses')} style={{ background: '#3b82f6' }}>
-                Add Expense
+              <button onClick={() => navigate('/expenses')} style={{ flex: '1', minWidth: '200px' }}>
+                ➕ Add Expense
               </button>
-              <button onClick={() => navigate('/reports')} style={{ background: '#10b981' }}>
-                View Reports
+              <button onClick={() => navigate('/reports')} className="success" style={{ flex: '1', minWidth: '200px' }}>
+                📈 View Reports
               </button>
             </div>
           </div>

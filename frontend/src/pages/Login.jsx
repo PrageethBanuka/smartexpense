@@ -30,19 +30,56 @@ export default function Login() {
   };
 
   return (
-    <div className="card">
-      <h2>Login</h2>
-      <form onSubmit={onSubmit}>
-        <label htmlFor="email">Email</label>
-        <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+    <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="card" style={{ maxWidth: '450px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🔐</div>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: '800', margin: 0 }}>Welcome Back</h2>
+          <p style={{ color: 'var(--fg-muted)', marginTop: '0.5rem', fontSize: '0.95rem' }}>
+            Log in to continue managing your expenses
+          </p>
+        </div>
 
-        <label htmlFor="password">Password</label>
-        <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <form onSubmit={onSubmit}>
+          <label htmlFor="email">📧 Email Address</label>
+          <input 
+            id="email" 
+            type="email" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            required 
+            placeholder="you@example.com"
+          />
 
-        <button type="submit" disabled={loading}>{loading ? 'Logging in…' : 'Login'}</button>
-      </form>
-      {error && <p className="error">{error}</p>}
-      {notice && <p className="result">{notice}</p>}
+          <label htmlFor="password">🔑 Password</label>
+          <input 
+            id="password" 
+            type="password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            required 
+            placeholder="Enter your password"
+          />
+
+          <button type="submit" disabled={loading} style={{ marginTop: '1.5rem' }}>
+            {loading ? '🔄 Logging in…' : '🚀 Login'}
+          </button>
+        </form>
+        
+        {error && <p className="error">{error}</p>}
+        {notice && <p className="result">✅ {notice}</p>}
+        
+        <div style={{ 
+          marginTop: '1.5rem', 
+          paddingTop: '1.5rem', 
+          borderTop: '1px solid var(--glass-border)',
+          textAlign: 'center',
+          color: 'var(--fg-muted)',
+          fontSize: '0.9rem'
+        }}>
+          Don't have an account? <a href="/register" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: '600' }}>Sign up</a>
+        </div>
+      </div>
     </div>
   );
 }

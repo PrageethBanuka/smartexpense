@@ -76,56 +76,228 @@ export default function Expenses() {
   const total = list.reduce((sum, exp) => sum + Number(exp.amount), 0);
 
   return (
-    <div className="card">
-      <h2>Expenses</h2>
-      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        <div>
-          <label htmlFor="month">Month</label>
-          <input id="month" type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
+    <div className="card card-wide">
+      <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem' }}>💳 Expenses</h2>
+      <div style={{ 
+        display: 'flex', 
+        gap: '1.5rem', 
+        flexWrap: 'wrap', 
+        alignItems: 'center',
+        marginBottom: '1.5rem',
+        paddingBottom: '1.5rem',
+        borderBottom: '1px solid var(--glass-border)'
+      }}>
+        <div style={{ flex: '1', minWidth: '200px' }}>
+          <label htmlFor="month" style={{ marginBottom: '0.5rem', display: 'block', fontSize: '0.9rem' }}>
+            📅 Select Month
+          </label>
+          <input 
+            id="month" 
+            type="month" 
+            value={month} 
+            onChange={(e) => setMonth(e.target.value)}
+            style={{ width: '100%' }}
+          />
         </div>
-        <div><strong>Total:</strong> {total.toFixed(2)}</div>
-        {loading && <span>Loading…</span>}
+        <div className="stat-card" style={{ flex: '1', minWidth: '200px', margin: 0 }}>
+          <div className="stat-label">Total for {month}</div>
+          <div className="stat-value" style={{ fontSize: '1.75rem' }}>
+            ${total.toFixed(2)}
+          </div>
+        </div>
+        {loading && <span style={{ color: 'var(--primary)' }}>⏳ Loading…</span>}
       </div>
-      {error && <p className="error" style={{ marginTop: '0.5rem' }}>{error}</p>}
-      {notice && <p className="result" style={{ marginTop: '0.5rem' }}>{notice}</p>}
+      {error && <p className="error">{error}</p>}
+      {notice && <p className="result">✅ {notice}</p>}
 
-      <form onSubmit={onSubmit} style={{ marginTop: '1.5rem' }}>
-        <h3 style={{ marginTop: 0 }}>{editingId ? 'Edit Expense' : 'Add Expense'}</h3>
-        <label htmlFor="amount">Amount</label>
-        <input id="amount" name="amount" type="number" step="0.01" min="0.01" required value={form.amount} onChange={onChange} />
+      <form onSubmit={onSubmit} style={{ 
+        marginTop: '1.5rem', 
+        background: 'var(--glass-bg)', 
+        padding: '1.5rem', 
+        borderRadius: '12px',
+        border: '1px solid var(--card-border)' 
+      }}>
+        <h3 style={{ marginTop: 0, marginBottom: '1.25rem', fontSize: '1.25rem', fontWeight: '700' }}>
+          {editingId ? '✏️ Edit Expense' : '➕ Add New Expense'}
+        </h3>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+          <div>
+            <label htmlFor="amount">Amount ($)</label>
+            <input 
+              id="amount" 
+              name="amount" 
+              type="number" 
+              step="0.01" 
+              min="0.01" 
+              required 
+              value={form.amount} 
+              onChange={onChange}
+              placeholder="0.00"
+            />
+          </div>
 
-        <label htmlFor="category">Category</label>
-        <select id="category" name="category" value={form.category} onChange={onChange}>
-          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
+          <div>
+            <label htmlFor="category">Category</label>
+            <select 
+              id="category" 
+              name="category" 
+              value={form.category} 
+              onChange={onChange}
+              style={{ width: '100%' }}
+            >
+              {CATEGORIES.map(c => (
+                <option key={c} value={c}>
+                  {c.charAt(0).toUpperCase() + c.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <label htmlFor="occurredOn">Date</label>
-        <input id="occurredOn" name="occurredOn" type="date" required value={form.occurredOn} onChange={onChange} />
+          <div>
+            <label htmlFor="occurredOn">Date</label>
+            <input 
+              id="occurredOn" 
+              name="occurredOn" 
+              type="date" 
+              required 
+              value={form.occurredOn} 
+              onChange={onChange}
+            />
+          </div>
+        </div>
 
-        <label htmlFor="note">Note</label>
-        <input id="note" name="note" value={form.note} onChange={onChange} placeholder="Optional" />
+        <div style={{ marginTop: '1rem' }}>
+          <label htmlFor="note">Note (Optional)</label>
+          <input 
+            id="note" 
+            name="note" 
+            value={form.note} 
+            onChange={onChange} 
+            placeholder="Add a description..."
+          />
+        </div>
 
-        <button type="submit" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Update' : 'Add'}</button>
-        {editingId && <button type="button" style={{ marginTop: '0.5rem' }} onClick={() => { setEditingId(null); setForm({ amount: '', category: 'food', note: '', occurredOn: new Date().toISOString().slice(0,10) }); }}>Cancel Edit</button>}
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+          <button type="submit" disabled={saving} style={{ flex: '1', minWidth: '150px' }}>
+            {saving ? '⏳ Saving…' : editingId ? '💾 Update' : '➕ Add'}
+          </button>
+          {editingId && (
+            <button 
+              type="button" 
+              className="secondary"
+              style={{ flex: '1', minWidth: '150px', marginTop: 0 }} 
+              onClick={() => { 
+                setEditingId(null); 
+                setForm({ amount: '', category: 'food', note: '', occurredOn: new Date().toISOString().slice(0,10) }); 
+              }}
+            >
+              ❌ Cancel
+            </button>
+          )}
+        </div>
       </form>
 
-      <hr style={{ margin: '2rem 0', borderColor: '#1f2937' }} />
-      <h3 style={{ marginTop: 0 }}>List</h3>
-      {list.length === 0 && !loading && <p style={{ color: 'var(--muted)' }}>No expenses for this month yet.</p>}
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-        {list.map(exp => (
-          <li key={exp.id} style={{ border: '1px solid #1f2937', padding: '0.75rem', borderRadius: 6, marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ flex: 1 }}>
-              <strong>{Number(exp.amount).toFixed(2)}</strong> – {exp.category} – {exp.occurredOn}
-              {exp.note && <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{exp.note}</div>}
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button type="button" onClick={() => startEdit(exp)} style={{ padding: '0.4rem 0.6rem' }}>Edit</button>
-              <button type="button" onClick={() => remove(exp.id)} style={{ padding: '0.4rem 0.6rem', background: '#f87171', color: '#fff' }}>Delete</button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <div style={{ marginTop: '2.5rem' }}>
+        <h3 style={{ marginTop: 0, marginBottom: '1.25rem', fontSize: '1.25rem', fontWeight: '700' }}>
+          📋 Expense List
+        </h3>
+        {list.length === 0 && !loading && (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '3rem', 
+            background: 'var(--glass-bg)', 
+            borderRadius: '12px',
+            border: '1px solid var(--card-border)',
+            color: 'var(--fg-muted)' 
+          }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>📝</div>
+            <p style={{ margin: 0, fontSize: '1.05rem' }}>No expenses for this month yet.</p>
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>Start tracking by adding your first expense above!</p>
+          </div>
+        )}
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+          {list.map(exp => (
+            <li 
+              key={exp.id} 
+              style={{ 
+                border: '1px solid var(--glass-border)', 
+                padding: '1.25rem', 
+                borderRadius: '10px', 
+                marginBottom: '0.75rem', 
+                background: 'var(--glass-bg)',
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                gap: '1.5rem',
+                flexWrap: 'wrap',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--primary-light)', marginBottom: '0.5rem' }}>
+                  ${Number(exp.amount).toFixed(2)}
+                </div>
+                <div style={{ fontSize: '0.95rem', color: 'var(--fg-muted)', marginBottom: '0.25rem' }}>
+                  <span style={{ 
+                    display: 'inline-block', 
+                    padding: '0.25rem 0.75rem', 
+                    background: 'rgba(59, 130, 246, 0.2)',
+                    borderRadius: '6px',
+                    fontSize: '0.85rem',
+                    fontWeight: '600',
+                    marginRight: '0.5rem'
+                  }}>
+                    {exp.category.charAt(0).toUpperCase() + exp.category.slice(1)}
+                  </span>
+                  📅 {exp.occurredOn}
+                </div>
+                {exp.note && (
+                  <div style={{ 
+                    fontSize: '0.9rem', 
+                    color: 'var(--fg-subtle)', 
+                    marginTop: '0.5rem',
+                    fontStyle: 'italic',
+                    paddingLeft: '0.5rem',
+                    borderLeft: '2px solid var(--glass-border)'
+                  }}>
+                    {exp.note}
+                  </div>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button 
+                  type="button" 
+                  onClick={() => startEdit(exp)} 
+                  style={{ 
+                    padding: '0.5rem 1rem', 
+                    background: 'transparent',
+                    border: '1px solid var(--primary)',
+                    color: 'var(--primary)',
+                    boxShadow: 'none',
+                    fontSize: '0.9rem',
+                    width: 'auto'
+                  }}
+                >
+                  ✏️ Edit
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => remove(exp.id)} 
+                  className="danger"
+                  style={{ 
+                    padding: '0.5rem 1rem',
+                    fontSize: '0.9rem',
+                    width: 'auto'
+                  }}
+                >
+                  🗑️ Delete
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

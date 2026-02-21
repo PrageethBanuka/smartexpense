@@ -31,22 +31,70 @@ export default function Register() {
   };
 
   return (
-    <div className="card">
-      <h2>Register</h2>
-      <form onSubmit={onSubmit}>
-        <label htmlFor="name">Name</label>
-        <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+    <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="card" style={{ maxWidth: '450px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>✨</div>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: '800', margin: 0 }}>Create Account</h2>
+          <p style={{ color: 'var(--fg-muted)', marginTop: '0.5rem', fontSize: '0.95rem' }}>
+            Start tracking your expenses today
+          </p>
+        </div>
 
-        <label htmlFor="email">Email</label>
-        <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <form onSubmit={onSubmit}>
+          <label htmlFor="name">👤 Full Name</label>
+          <input 
+            id="name" 
+            type="text" 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
+            required 
+            placeholder="John Doe"
+          />
 
-        <label htmlFor="password">Password</label>
-        <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+          <label htmlFor="email">📧 Email Address</label>
+          <input 
+            id="email" 
+            type="email" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            required 
+            placeholder="you@example.com"
+          />
 
-        <button type="submit" disabled={loading}>{loading ? 'Creating…' : 'Create Account'}</button>
-      </form>
-      {error && <p className="error">{error}</p>}
-      {notice && <p className="result">{notice}</p>}
+          <label htmlFor="password">🔑 Password</label>
+          <input 
+            id="password" 
+            type="password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            required 
+            minLength={6}
+            placeholder="At least 6 characters"
+          />
+          <div style={{ fontSize: '0.85rem', color: 'var(--fg-subtle)', marginTop: '0.5rem' }}>
+            🛡️ Password must be at least 6 characters
+          </div>
+
+          <button type="submit" disabled={loading} style={{ marginTop: '1.5rem' }}>
+            {loading ? '⏳ Creating…' : '🚀 Create Account'}
+          </button>
+        </form>
+        
+        {error && <p className="error">{error}</p>}
+        {notice && <p className="result">✅ {notice}</p>}
+        
+        <div style={{ 
+          marginTop: '1.5rem', 
+          paddingTop: '1.5rem', 
+          borderTop: '1px solid var(--glass-border)',
+          textAlign: 'center',
+          color: 'var(--fg-muted)',
+          fontSize: '0.9rem'
+        }}>
+          Already have an account? <a href="/login" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: '600' }}>Sign in</a>
+        </div>
+      </div>
     </div>
   );
 }

@@ -3,7 +3,7 @@
 
 terraform {
   required_version = ">= 1.5.0"
-  
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -14,7 +14,7 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
-  
+
   # Credentials should be configured via:
   # - AWS CLI: aws configure
   # - Environment variables: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
@@ -167,7 +167,7 @@ resource "aws_instance" "smartexpense_server" {
 
   # Storage
   root_block_device {
-    volume_size           = 20  # GB
+    volume_size           = 20 # GB
     volume_type           = "gp3"
     delete_on_termination = true
     encrypted             = true
@@ -180,7 +180,7 @@ resource "aws_instance" "smartexpense_server" {
   # Additional volume for database persistence
   ebs_block_device {
     device_name           = "/dev/sdb"
-    volume_size           = 10  # GB for database
+    volume_size           = 10 # GB for database
     volume_type           = "gp3"
     delete_on_termination = false
     encrypted             = true
