@@ -24,13 +24,13 @@ function parseMonthRange(monthStr) {
 router.post('/', async (req, res) => {
   try {
     const { amount, category, note, occurredOn } = req.body || {};
-    if (amount == null || Number(amount) <= 0) {
+    if (amount === null || amount === undefined || Number(amount) <= 0) {
       return res.status(400).json({ message: 'amount must be > 0' });
     }
     if (!category || !ALLOWED_CATEGORIES.includes(category)) {
       return res.status(400).json({ message: `category must be one of: ${ALLOWED_CATEGORIES.join(', ')}` });
     }
-    let dateValue = occurredOn ? new Date(occurredOn) : new Date();
+    const dateValue = occurredOn ? new Date(occurredOn) : new Date();
   if (Number.isNaN(dateValue.getTime())) {
       return res.status(400).json({ message: 'Invalid occurredOn date' });
     }
@@ -86,7 +86,7 @@ router.put('/:id', async (req, res) => {
     const expense = await Expense.findOne({ where: { id: req.params.id, userId: req.userId } });
     if (!expense) return res.status(404).json({ message: 'Not found' });
     const { amount, category, note, occurredOn } = req.body || {};
-    if (amount != null) {
+    if (amount !== null && amount !== undefined) {
       if (Number(amount) <= 0) return res.status(400).json({ message: 'amount must be > 0' });
       expense.amount = amount;
     }
