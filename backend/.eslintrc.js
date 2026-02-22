@@ -9,7 +9,6 @@ module.exports = {
   rules: {
     'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     'no-console': 'off',
-    'no-process-exit': 'off',
     eqeqeq: 'error',
     'no-var': 'error',
     'prefer-const': 'warn',
