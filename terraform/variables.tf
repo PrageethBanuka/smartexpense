@@ -34,3 +34,9 @@ variable "project_name" {
   type        = string
   default     = "SmartExpense"
 }
+
+variable "admin_cidr" {
+  description = "CIDR block allowed for SSH access. Restrict to your IP in production (e.g. 203.0.113.50/32)"
+  type        = string
+  default     = "0.0.0.0/0"
+}

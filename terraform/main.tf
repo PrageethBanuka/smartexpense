@@ -10,6 +10,18 @@ terraform {
       version = "~> 5.0"
     }
   }
+
+  # Remote backend (recommended for production/team use):
+  # Uncomment the block below and create the S3 bucket + DynamoDB table first.
+  # This enables state locking and shared state across team members.
+  #
+  # backend "s3" {
+  #   bucket         = "smartexpense-tfstate"
+  #   key            = "prod/terraform.tfstate"
+  #   region         = "us-east-1"
+  #   encrypt        = true
+  #   dynamodb_table = "smartexpense-tf-lock"  # For state locking
+  # }
 }
 
 provider "aws" {
@@ -90,7 +102,7 @@ resource "aws_security_group" "smartexpense_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # IMPORTANT: Restrict to your IP in production
+    cidr_blocks = [var.admin_cidr] # Restrict to your IP in production via terraform.tfvars
   }
 
   # HTTP

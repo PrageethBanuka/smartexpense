@@ -1,11 +1,32 @@
-node_modules
-Dockerfile
-.dockerignore
+# Version control
 .git
 .gitignore
-**/node_modules
-**/dist
-**/build
-**/.env
-**/.env.*
-**/.DS_Store
+
+# Infrastructure & config management (not needed in containers)
+terraform/
+ansible/
+scripts/
+.github/
+
+# Documentation
+*.md
+*.pdf
+*.html
+*.zip
+5265/
+SmartExpense_Submission/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+.qodo/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+npm-debug.log*

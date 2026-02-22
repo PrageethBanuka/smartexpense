@@ -1,9 +1,22 @@
-FROM node:18-alpine
+# Stage 1: Install production dependencies
+FROM node:18-alpine AS deps
 WORKDIR /app
-ENV NODE_ENV=production
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev
 
-COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
-RUN npm ci --omit=dev || yarn install --production || pnpm install --prod
-COPY . .
+# Stage 2: Production image
+FROM node:18-alpine
+RUN apk add --no-cache dumb-init curl
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY src/ ./src/
+COPY package.json .
+
+ENV NODE_ENV=production
 EXPOSE 4000
-CMD ["node", "src/index.js"]
+
+# Run as non-root user for security
+USER node
+
+CMD ["dumb-init", "node", "src/index.js"]
