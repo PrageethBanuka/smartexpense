@@ -11,20 +11,7 @@ SmartExpense is a simple and user-friendly web application for tracking personal
 
 ## Architecture
 
-```mermaid
-graph LR
-    Dev["Developer"] -->|git push| GH["GitHub"]
-    GH -->|trigger| GHA["GitHub Actions CI/CD"]
-    GHA -->|build & push| DH["Docker Hub"]
-    GHA -->|deploy via SSH| EC2["AWS EC2"]
-    EC2 -->|runs| FE["Frontend - Nginx :8080"]
-    EC2 -->|runs| BE["Backend - Node.js :4000"]
-    EC2 -->|runs| DB[("PostgreSQL :5432")]
-    FE -->|proxy /api| BE
-    BE --> DB
-    TF["Terraform"] -.->|provisions| EC2
-    ANS["Ansible"] -.->|configures| EC2
-```
+![SmartExpense DevOps Architecture](docs/architecture.png)
 
 ## Feature Summary
 
