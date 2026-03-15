@@ -36,7 +36,13 @@ variable "project_name" {
 }
 
 variable "admin_cidr" {
-  description = "CIDR block allowed for SSH access. Restrict to your IP in production (e.g. 203.0.113.50/32)"
+  description = "CIDR block allowed for SSH access. MUST be set to your IP (e.g. 203.0.113.50/32). No default — forces explicit config."
   type        = string
-  default     = "0.0.0.0/0"
+  # No default! You must set this in terraform.tfvars
+  # Find your IP: curl -s https://checkip.amazonaws.com
+
+  validation {
+    condition     = var.admin_cidr != "0.0.0.0/0"
+    error_message = "SSH must NOT be open to the world (0.0.0.0/0). Set admin_cidr to your IP/32."
+  }
 }
