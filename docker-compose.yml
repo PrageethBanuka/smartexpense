@@ -1,11 +1,17 @@
+# ─────────────────────────────────────────────────────────────
+# SmartExpense — Development Docker Compose
+# ─────────────────────────────────────────────────────────────
+# SECURITY: Secrets are read from .env file (not hardcoded).
+# Copy .env.example → .env and fill in values before running.
+# ─────────────────────────────────────────────────────────────
 services:
   postgres:
     image: postgres:16-alpine
     container_name: smartexpense-postgres
     environment:
-      POSTGRES_DB: smartexpense
-      POSTGRES_USER: smartexpense
-      POSTGRES_PASSWORD: smartexpense
+      POSTGRES_DB: ${DB_NAME:-smartexpense}
+      POSTGRES_USER: ${DB_USER:-smartexpense}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
     # Map to 5433 on host to avoid clashing with a local Postgres on 5432
     ports:
       - '5433:5432'
@@ -28,10 +34,10 @@ services:
       PORT: 4000
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: smartexpense
-      DB_USER: smartexpense
-      DB_PASSWORD: smartexpense
-      JWT_SECRET: dev-secret-change
+      DB_NAME: ${DB_NAME:-smartexpense}
+      DB_USER: ${DB_USER:-smartexpense}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
       CORS_ORIGIN: http://localhost:3000
     ports:
       - '4000:4000'

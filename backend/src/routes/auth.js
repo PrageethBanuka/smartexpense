@@ -5,6 +5,11 @@ const { User } = require('../models');
 
 const router = express.Router();
 
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('FATAL: JWT_SECRET environment variable is not set.');
+}
+
 function validateEmail(email) {
   return /.+@.+\..+/.test(email);
 }
@@ -31,7 +36,7 @@ router.post('/register', async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await User.create({ name, email, passwordHash });
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'dev-secret', {
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
       expiresIn: '7d',
     });
 
@@ -59,7 +64,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'dev-secret', {
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
       expiresIn: '7d',
     });
 
@@ -71,3 +76,4 @@ router.post('/login', async (req, res) => {
 });
 
 module.exports = router;
+
