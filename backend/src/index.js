@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const logger = require('./config/logger');
 const { sequelize } = require('./models');
 const authRoutes = require('./routes/auth');
 const expenseRoutes = require('./routes/expenses');
@@ -28,6 +29,7 @@ app.get('/health', async (req, res) => {
     await sequelize.authenticate();
     res.json({ status: 'ok', service: 'smartexpense-backend', db: 'connected' });
   } catch (err) {
+    logger.warn({ err }, 'Health check: DB disconnected');
     res.status(503).json({ status: 'degraded', service: 'smartexpense-backend', db: 'disconnected' });
   }
 });
@@ -57,16 +59,15 @@ async function start() {
   try {
     await sequelize.authenticate();
     await sequelize.sync();
-    console.log('Database connected and models synced');
+    logger.info('Database connected and models synced');
 
     app.listen(PORT, () => {
-      console.log(`Server listening on http://localhost:${PORT}`);
+      logger.info({ port: PORT, env: process.env.NODE_ENV || 'development' }, 'Server listening');
     });
   } catch (err) {
-    console.error('Failed to start server:', err);
+    logger.fatal({ err }, 'Failed to start server');
     process.exit(1);
   }
 }
 
 start();
-
