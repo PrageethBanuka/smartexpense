@@ -40,6 +40,9 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      - name: Check for known vulnerabilities
+        run: npm audit --audit-level=high
+        continue-on-error: true   # Warn now, make it gating once clean
 
   # Test frontend code
   test-frontend:
