@@ -63,51 +63,87 @@ jobs:
         env:
           CI: false
 
-  # Build and push backend Docker image
+  # Build, scan, and push backend Docker image
   backend-dockerhub:
     runs-on: ubuntu-latest
     needs: test-backend
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
+
+      # Build locally first (don't push yet)
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          load: true       # Load into local Docker (not push)
+          tags: ${{ env.DOCKERHUB_USER }}/smartexpense-backend:latest
+
+      # Scan for vulnerabilities BEFORE pushing
+      - name: Scan backend image for vulnerabilities (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.DOCKERHUB_USER }}/smartexpense-backend:latest
+          format: 'table'
+          exit-code: '1'              # Fail if vulnerabilities found
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true        # Only flag fixable issues
+
+      # Push only if scan passed
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push backend image to Docker Hub
-        uses: docker/build-push-action@v6
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: true
-          tags: |
-            ${{ env.DOCKERHUB_USER }}/smartexpense-backend:latest
-            ${{ env.DOCKERHUB_USER }}/smartexpense-backend:sha-${{ github.sha }}
+      - name: Tag and push backend image
+        run: |
+          docker tag ${{ env.DOCKERHUB_USER }}/smartexpense-backend:latest \
+                     ${{ env.DOCKERHUB_USER }}/smartexpense-backend:sha-${{ github.sha }}
+          docker push ${{ env.DOCKERHUB_USER }}/smartexpense-backend:latest
+          docker push ${{ env.DOCKERHUB_USER }}/smartexpense-backend:sha-${{ github.sha }}
 
-  # Build and push frontend Docker image
+  # Build, scan, and push frontend Docker image
   frontend-dockerhub:
     runs-on: ubuntu-latest
     needs: [test-frontend, backend-dockerhub]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
+
+      # Build locally first
+      - name: Build frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile.prod
+          load: true
+          tags: ${{ env.DOCKERHUB_USER }}/smartexpense-frontend:latest
+          build-args: |
+            REACT_APP_API_URL=/api
+
+      # Scan for vulnerabilities BEFORE pushing
+      - name: Scan frontend image for vulnerabilities (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.DOCKERHUB_USER }}/smartexpense-frontend:latest
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+
+      # Push only if scan passed
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push frontend image to Docker Hub (prod)
-        uses: docker/build-push-action@v6
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile.prod
-          push: true
-          tags: |
-            ${{ env.DOCKERHUB_USER }}/smartexpense-frontend:latest
-            ${{ env.DOCKERHUB_USER }}/smartexpense-frontend:sha-${{ github.sha }}
-          build-args: |
-            REACT_APP_API_URL=/api
+      - name: Tag and push frontend image
+        run: |
+          docker tag ${{ env.DOCKERHUB_USER }}/smartexpense-frontend:latest \
+                     ${{ env.DOCKERHUB_USER }}/smartexpense-frontend:sha-${{ github.sha }}
+          docker push ${{ env.DOCKERHUB_USER }}/smartexpense-frontend:latest
+          docker push ${{ env.DOCKERHUB_USER }}/smartexpense-frontend:sha-${{ github.sha }}
 
   deploy:
     runs-on: ubuntu-latest
