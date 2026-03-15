@@ -23,8 +23,34 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # ──────────────────────────────────────────────
+  # SAST: Static Application Security Testing
+  # ──────────────────────────────────────────────
+  sast-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Semgrep (OWASP Top 10)
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: "p/owasp-top-ten"
+        env:
+          SEMGREP_APP_TOKEN: ""   # Works without token for public rules
 
-  # Test backend code
+  # ──────────────────────────────────────────────
+  # IaC SECURITY: Scan Terraform for misconfigurations
+  # ──────────────────────────────────────────────
+  terraform-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tfsec (Terraform security scanner)
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: terraform
+          soft_fail: true   # Warn initially, make it gating later
+
+  # Test backend code (with coverage)
   test-backend:
     runs-on: ubuntu-latest
     defaults:
@@ -39,7 +65,8 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: npm run lint
-      - run: npm test
+      - name: Run tests with coverage
+        run: npx jest --forceExit --detectOpenHandles --coverage
       - name: Check for known vulnerabilities
         run: npm audit --audit-level=high
         continue-on-error: true   # Warn now, make it gating once clean
