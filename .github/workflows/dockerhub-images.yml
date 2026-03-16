@@ -96,7 +96,7 @@ jobs:
     needs: test-backend
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       # Build locally first (don't push yet)
       - name: Build backend image
@@ -136,7 +136,7 @@ jobs:
     needs: [test-frontend, backend-dockerhub]
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       # Build locally first
       - name: Build frontend image
