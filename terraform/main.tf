@@ -61,7 +61,7 @@ resource "aws_subnet" "smartexpense_public_subnet" {
   vpc_id                  = aws_vpc.smartexpense_vpc.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = data.aws_availability_zones.available.names[0]
-  map_public_ip_on_launch = true  # nosemgrep: terraform.aws.security.aws-subnet-has-public-ip-address.aws-subnet-has-public-ip-address
+  map_public_ip_on_launch = true  # nosemgrep: terraform.aws.security.aws-subnet-has-public-ip-address
 
   tags = {
     Name    = "smartexpense-public-subnet"
@@ -175,7 +175,7 @@ resource "aws_instance" "smartexpense_server" {
 
   subnet_id                   = aws_subnet.smartexpense_public_subnet.id
   vpc_security_group_ids      = [aws_security_group.smartexpense_sg.id]
-  associate_public_ip_address = true  # nosemgrep: terraform.aws.security.aws-ec2-has-public-ip.aws-ec2-has-public-ip
+  associate_public_ip_address = true  # nosemgrep: terraform.aws.security.aws-ec2-has-public-ip
 
   # Enforce IMDSv2 to prevent SSRF-based credential theft
   metadata_options {
