@@ -1,28 +1,4 @@
-# ─────────────────────────────────────────────────────────────
-# Gitleaks Ignore List
-# ─────────────────────────────────────────────────────────────
-# These are OLD commits from BEFORE the DevSecOps cleanup.
-# The secrets in these commits have been removed in step-1.
-#
-# FORMAT: Each line is a gitleaks "fingerprint" (commit:file:rule:line).
-# You can also just list commit hashes to ignore entire commits.
-#
-# HOW TO GENERATE EXACT FINGERPRINTS:
-#   1. Install gitleaks:  brew install gitleaks
-#   2. Run:  gitleaks detect --report-format json --report-path gitleaks-report.json
-#   3. Copy the "Fingerprint" field from each finding into this file
-# ─────────────────────────────────────────────────────────────
-
-# Old commits before secret cleanup (step-1)
-# These contained hardcoded DB passwords and JWT secrets in:
-#   - docker-compose.yml
-#   - docker-compose.prod.yml
-#   - backend/src/middleware/auth.js
-#   - backend/src/routes/auth.js
-#   - .env.example
-
-3777d70
-f1f7004
-def5bf7
-e334e19
-48d9470
+# Gitleaks Ignore — old secrets from before DevSecOps cleanup (step-1)
+# These were placeholder values in .env.example, now replaced with CHANGE_ME.
+48d9470e56f4e33d54a6c896d6e5485056df8356:.env.example:generic-api-key:7
+48d9470e56f4e33d54a6c896d6e5485056df8356:.env.example:generic-api-key:10
