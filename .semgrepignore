@@ -2,3 +2,5 @@
 # These contain old submission copies — not the active codebase
 5265/
 SmartExpense_Submission/
+terraform/main.tf
+frontend/nginx.conf
