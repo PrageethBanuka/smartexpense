@@ -61,7 +61,7 @@ resource "aws_subnet" "smartexpense_public_subnet" {
   vpc_id                  = aws_vpc.smartexpense_vpc.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = data.aws_availability_zones.available.names[0]
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = true  # nosemgrep: aws-subnet-has-public-ip-address — intentional: this is a public-facing web server
 
   tags = {
     Name    = "smartexpense-public-subnet"
@@ -175,7 +175,14 @@ resource "aws_instance" "smartexpense_server" {
 
   subnet_id                   = aws_subnet.smartexpense_public_subnet.id
   vpc_security_group_ids      = [aws_security_group.smartexpense_sg.id]
-  associate_public_ip_address = true
+  associate_public_ip_address = true  # nosemgrep: aws-ec2-has-public-ip — intentional: web server needs public access
+
+  # Enforce IMDSv2 to prevent SSRF-based credential theft
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"   # Forces IMDSv2 (blocks IMDSv1)
+    http_put_response_hop_limit = 1
+  }
 
   # Storage
   root_block_device {

@@ -1,0 +1,4 @@
+# Directories to exclude from Semgrep scanning
+# These contain old submission copies — not the active codebase
+5265/
+SmartExpense_Submission/
