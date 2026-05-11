@@ -1,5 +1,5 @@
 # Use Node LTS (22.x) — kept up-to-date for security patches
-FROM node:22-alpine
+FROM node:26-alpine
 RUN apk update && apk upgrade --no-cache
 
 WORKDIR /app
